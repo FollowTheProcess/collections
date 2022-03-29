@@ -98,6 +98,40 @@ _, err := s.Pop()
 fmt.Println(err) // "pop from empty stack"
 ```
 
+### Queue
+
+A queue is a FIFO data structure useful in a variety of situations.
+
+```go
+// Initialise a new queue with a concrete type
+q := queue.New[string]()
+
+// Push items into the back of the queue
+q.Push("hello")
+q.Push("queues")
+q.Push("in")
+q.Push("go")
+
+q.Length() // 4
+
+// Pop items off the front of the queue
+item, _ := q.Pop()
+fmt.Println(item) // "hello"
+
+item, _ = q.Pop()
+fmt.Println(item) // "queues"
+
+item, _ = q.Pop()
+fmt.Println(item) // "in"
+
+item, _ = q.Pop()
+fmt.Println(item) // "go"
+
+// Popping from an empty queue returns an error
+_, err := q.Pop()
+fmt.Println(err) // "pop from empty queue"
+```
+
 ### Credits
 
 This package was created with [cookiecutter] and the [FollowTheProcess/go_cookie] project template.
