@@ -64,6 +64,40 @@ set.Intersection(s, other) // ["hello"]
 set.Difference(s, other) // ["sets", "in"]
 ```
 
+### Stack
+
+A stack is a LIFO data structure useful in a variety of situations.
+
+```go
+// Initialise a new stack with a concrete type
+s := stack.New[string]()
+
+// Push items onto the stack
+s.Push("hello")
+s.Push("stacks")
+s.Push("in")
+s.Push("go")
+
+s.Length() // 4
+
+// Pop items off the stack in LIFO order
+item, _ := s.Pop()
+fmt.Println(item) // "go"
+
+item, _ = s.Pop()
+fmt.Println(item) // "in"
+
+item, _ = s.Pop()
+fmt.Println(item) // "stacks"
+
+item, _ = s.Pop()
+fmt.Println(item) // "hello"
+
+// Popping from an empty stack returns an error
+_, err := s.Pop()
+fmt.Println(err) // "pop from empty stack"
+```
+
 ### Credits
 
 This package was created with [cookiecutter] and the [FollowTheProcess/go_cookie] project template.
