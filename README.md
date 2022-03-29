@@ -56,13 +56,13 @@ other.Add("hello")
 other.Add("more")
 
 // Union: combine both sets into one
-set.Union(s, other) // ["hello", "in", "sets", "more"]
+set.Union(s, other) // ["hello", "in", "sets", "more", "go"]
 
 // Intersection: all items present in both sets
 set.Intersection(s, other) // ["hello"]
 
 // Difference: items in s but not in other
-set.Difference(s, other) // ["sets", "in"]
+set.Difference(s, other) // ["sets", "in", "go"]
 ```
 
 ### Stack
