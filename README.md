@@ -4,6 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/FollowTheProcess/collections)](https://goreportcard.com/report/github.com/FollowTheProcess/collections)
 [![GitHub](https://img.shields.io/github/v/release/FollowTheProcess/collections?logo=github&sort=semver)](https://github.com/FollowTheProcess/collections)
 [![CI](https://github.com/FollowTheProcess/collections/workflows/CI/badge.svg)](https://github.com/FollowTheProcess/collections/actions?query=workflow%3ACI)
+[![Go Reference](https://pkg.go.dev/badge/github.com/FollowTheProcess/collections.svg)](https://pkg.go.dev/github.com/FollowTheProcess/collections)
 
 Collection of generic data structures in Go 📦
 
