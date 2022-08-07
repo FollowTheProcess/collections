@@ -23,8 +23,8 @@ func New[T comparable]() *Set[T] {
 // Add adds an item to the set, if the item is
 // already present, Add becomes a no-op.
 //
-//  s := set.New[string]()
-//  s.Add("hello")
+//	s := set.New[string]()
+//	s.Add("hello")
 func (s *Set[T]) Add(item T) {
 	if _, ok := s.container[item]; !ok {
 		s.container[item] = struct{}{}
@@ -34,21 +34,21 @@ func (s *Set[T]) Add(item T) {
 // Remove removes an item from the set, if the item is
 // not present, Remove becomes a no-op.
 //
-//  s := set.New[string]()
-//  s.Add("hello")
-//  s.Add("there")
-//  s.Remove("there")
-//  s.Items() // [hello]
+//	s := set.New[string]()
+//	s.Add("hello")
+//	s.Add("there")
+//	s.Remove("there")
+//	s.Items() // [hello]
 func (s *Set[T]) Remove(item T) {
 	delete(s.container, item)
 }
 
 // Contains returns whether or not the set contains the given item.
 //
-//  s := set.New[int]()
-//  s.Contains(27) // false
-//  s.Add(27)
-//  s.Contains(27) // true
+//	s := set.New[int]()
+//	s.Contains(27) // false
+//	s.Add(27)
+//	s.Contains(27) // true
 func (s *Set[T]) Contains(item T) bool {
 	_, ok := s.container[item]
 	return ok
@@ -56,10 +56,10 @@ func (s *Set[T]) Contains(item T) bool {
 
 // Items returns all the items in the set as a slice.
 //
-//  s := set.New[string]()
-//  s.Add("hello")
-//  s.Add("there")
-//  s.Items() // [hello there]
+//	s := set.New[string]()
+//	s.Add("hello")
+//	s.Add("there")
+//	s.Items() // [hello there]
 func (s *Set[T]) Items() []T {
 	items := make([]T, 0, len(s.container))
 	for k := range s.container {
@@ -70,20 +70,20 @@ func (s *Set[T]) Items() []T {
 
 // Length returns the number of elements in the set.
 //
-//  s := set.New[int]()
-//  s.Add(42)
-//  s.Add(27)
-//  s.Length() // 2
+//	s := set.New[int]()
+//	s.Add(42)
+//	s.Add(27)
+//	s.Length() // 2
 func (s *Set[T]) Length() int {
 	return len(s.container)
 }
 
 // IsEmpty returns whether or not the set is empty.
 //
-//  s := set.New[string]()
-//  s.IsEmpty() // true
-//  s.Add("a thing")
-//  s.IsEmpty() // false
+//	s := set.New[string]()
+//	s.IsEmpty() // true
+//	s.Add("a thing")
+//	s.IsEmpty() // false
 func (s *Set[T]) IsEmpty() bool {
 	return len(s.container) == 0
 }
