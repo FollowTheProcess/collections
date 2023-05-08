@@ -31,6 +31,10 @@ cover:
     go tool cover -html={{ COVERAGE_DATA }} -o {{ COVERAGE_HTML }}
     open {{ COVERAGE_HTML }}
 
+# Run the benchmarks
+bench:
+    go test ./... -run=None -benchmem -bench .
+
 # Remove build artifacts and other project clutter
 clean:
     go clean ./...
