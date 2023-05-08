@@ -1,3 +1,3 @@
 module github.com/FollowTheProcess/collections
 
-go 1.19
+go 1.20

@@ -5,6 +5,7 @@
 [![GitHub](https://img.shields.io/github/v/release/FollowTheProcess/collections?logo=github&sort=semver)](https://github.com/FollowTheProcess/collections)
 [![CI](https://github.com/FollowTheProcess/collections/workflows/CI/badge.svg)](https://github.com/FollowTheProcess/collections/actions?query=workflow%3ACI)
 [![Go Reference](https://pkg.go.dev/badge/github.com/FollowTheProcess/collections.svg)](https://pkg.go.dev/github.com/FollowTheProcess/collections)
+[![codecov](https://codecov.io/gh/FollowTheProcess/collections/branch/main/graph/badge.svg)](https://codecov.io/gh/FollowTheProcess/collections)
 
 Collection of generic data structures in Go 📦
 
@@ -132,10 +133,3 @@ fmt.Println(item) // "go"
 _, err := q.Pop()
 fmt.Println(err) // "pop from empty queue"
 ```
-
-### Credits
-
-This package was created with [cookiecutter] and the [FollowTheProcess/go_cookie] project template.
-
-[cookiecutter]: https://github.com/cookiecutter/cookiecutter
-[FollowTheProcess/go_cookie]: https://github.com/FollowTheProcess/go_cookie
