@@ -245,3 +245,12 @@ func ExampleDifference() {
 	fmt.Println(difference)
 	// Output: [there]
 }
+
+func BenchmarkSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := set.New[int]()
+		for j := 0; j < 1000; j++ {
+			s.Add(j)
+		}
+	}
+}
