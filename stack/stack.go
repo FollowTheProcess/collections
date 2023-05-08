@@ -1,4 +1,6 @@
 // Package stack implements a LIFO stack generic over any type.
+//
+// The stack is implemented using an internal slice pointer, and is not thread safe.
 package stack
 
 import (
