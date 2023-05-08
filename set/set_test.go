@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/FollowTheProcess/collections/set"
@@ -162,6 +163,26 @@ func TestDifference(t *testing.T) {
 
 	if !reflect.DeepEqual(difference, want) {
 		t.Errorf("wrong difference: got %#v, wanted %#v", difference, want)
+	}
+}
+
+func TestString(t *testing.T) {
+	s := set.New[string]()
+
+	s.Add("hello")
+	s.Add("there")
+	s.Add("general")
+	s.Add("kenobi")
+
+	got := s.String()
+
+	// A set is an unordered collection and it's pointless to sort just for string representation
+	// so we just check the existence of the items
+	targets := []string{"hello", "there", "general", "kenobi"}
+	for _, target := range targets {
+		if !strings.Contains(got, target) {
+			t.Errorf("string representation does not contain %q", target)
+		}
 	}
 }
 
