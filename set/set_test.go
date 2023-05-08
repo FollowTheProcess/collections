@@ -245,3 +245,60 @@ func ExampleDifference() {
 	fmt.Println(difference)
 	// Output: [there]
 }
+
+func BenchmarkAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := set.New[int]()
+		for j := 0; j < 1000; j++ {
+			s.Add(j)
+		}
+	}
+}
+
+func BenchmarkIntersection(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Add(i)
+		s2.Add(i + 500)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		set.Intersection(s1, s2)
+	}
+}
+
+func BenchmarkUnion(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Add(i)
+		s2.Add(i + 500)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		set.Union(s1, s2)
+	}
+}
+
+func BenchmarkDifference(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Add(i)
+		s2.Add(i + 500)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		set.Difference(s1, s2)
+	}
+}
