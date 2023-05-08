@@ -12,6 +12,9 @@ import (
 var ErrPopFromEmptyStack = errors.New("pop from empty stack")
 
 // Stack is a LIFO stack generic over any type.
+//
+// A Stack should be instantiated by the New function and not directly,
+// doing so will result in a nil pointer dereference.
 type Stack[T any] struct {
 	container *[]T // Underlying slice, reference to allow mutation.
 }
