@@ -76,9 +76,19 @@ func TestPop(t *testing.T) {
 	}
 
 	// Try one more pop, should error
-	_, err = s.Pop()
+	item, err = s.Pop()
 	if err == nil {
 		t.Error("expected pop from empty stack error, got nil")
+	}
+
+	// Err should be a ErrPopFromEmptyStack
+	if err != stack.ErrPopFromEmptyStack {
+		t.Errorf("wrong error returned: got %v, wanted %v", err, stack.ErrPopFromEmptyStack)
+	}
+
+	// Item should be the zero value for the type
+	if item != "" {
+		t.Errorf("empty pop should be zero value: got %q, wanted %q", item, "")
 	}
 }
 
@@ -107,5 +117,20 @@ func TestString(t *testing.T) {
 
 	if s.String() != want {
 		t.Errorf("wrong string: got %s, wanted %s", s.String(), want)
+	}
+}
+
+func BenchmarkStack(b *testing.B) {
+	s := stack.New[int]()
+
+	for i := 0; i < b.N; i++ {
+		s.Push(i)
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, err := s.Pop()
+		if err != nil {
+			b.Errorf("Pop() returned an error: %v", err)
+		}
 	}
 }
