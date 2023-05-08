@@ -76,9 +76,19 @@ func TestPop(t *testing.T) {
 	}
 
 	// Try one more pop, should error
-	_, err = s.Pop()
+	item, err = s.Pop()
 	if err == nil {
 		t.Error("expected pop from empty stack error, got nil")
+	}
+
+	// Err should be a ErrPopFromEmptyStack
+	if err != stack.ErrPopFromEmptyStack {
+		t.Errorf("wrong error returned: got %v, wanted %v", err, stack.ErrPopFromEmptyStack)
+	}
+
+	// Item should be the zero value for the type
+	if item != "" {
+		t.Errorf("empty pop should be zero value: got %q, wanted %q", item, "")
 	}
 }
 
