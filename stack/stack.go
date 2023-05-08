@@ -34,7 +34,7 @@ func (s Stack[T]) Push(item T) {
 }
 
 // Pop removes an item from the top of the stack, if the stack
-// is empty an error will be returned.
+// is empty, ErrPopFromEmptyStack will be returned.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
