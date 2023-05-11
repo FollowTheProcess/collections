@@ -36,6 +36,23 @@ func TestLength(t *testing.T) {
 	}
 }
 
+func TestCap(t *testing.T) {
+	s := stack.New[int](stack.WithCapacity(10))
+	if s.Cap() != 10 {
+		t.Errorf("wrong capacity: got %d, wanted %d", s.Cap(), 10)
+	}
+
+	s2 := stack.New[int]()
+	if s2.Cap() != 0 {
+		t.Errorf("wrong capacity: got %d, wanted %d", s2.Cap(), 0)
+	}
+
+	s3 := stack.New[int](stack.WithCapacity(-1))
+	if s3.Cap() != 0 {
+		t.Errorf("wrong capacity: got %d, wanted %d", s3.Cap(), 0)
+	}
+}
+
 func TestPop(t *testing.T) {
 	s := stack.New[string]()
 	s.Push("hello")

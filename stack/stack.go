@@ -16,13 +16,19 @@ var ErrPopFromEmptyStack = errors.New("pop from empty stack")
 // A Stack should be instantiated by the New function and not directly,
 // doing so will result in a nil pointer dereference.
 type Stack[T any] struct {
-	container *[]T // Underlying slice, reference to allow mutation.
+	container *[]T    // Underlying slice, reference to allow mutation.
+	options   options // Options for the stack.
 }
 
 // New constructs and returns a new stack.
-func New[T any]() Stack[T] {
-	container := make([]T, 0)
-	return Stack[T]{container: &container}
+func New[T any](options ...Option) Stack[T] {
+	stack := Stack[T]{}
+	for _, option := range options {
+		option(&stack.options)
+	}
+	container := make([]T, 0, stack.options.capacity)
+	stack.container = &container
+	return stack
 }
 
 // Push adds an item to the top of stack.
@@ -64,6 +70,14 @@ func (s Stack[T]) Pop() (T, error) {
 //	s.Length() // 2
 func (s Stack[T]) Length() int {
 	return len(*s.container)
+}
+
+// Cap returns the current capacity of the stack.
+//
+//	s := stack.New[string](stack.WithCapacity(10))
+//	s.Cap() // 10
+func (s Stack[T]) Cap() int {
+	return cap(*s.container)
 }
 
 // IsEmpty returns whether or not the stack is empty.
