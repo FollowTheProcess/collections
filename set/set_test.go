@@ -105,7 +105,7 @@ func TestWithSize(t *testing.T) {
 		t.Errorf("wrong length: got %d, wanted %d", s.Length(), 4)
 	}
 
-	s2 := set.New[string](set.WithSize(-10))
+	s2 := set.New[string](set.WithSize(-10)) // Shouldn't panic
 	s2.Add("hello")
 	s2.Add("there")
 	s2.Add("general")

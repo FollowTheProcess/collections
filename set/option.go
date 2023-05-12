@@ -12,10 +12,7 @@ type Option func(*options)
 
 // WithSize sets the starting size of the set.
 //
-// If the size is negative, the default of 10 is used.
-//
-//	s := set.New[string](set.WithSize(10))
-//	s.Cap() // 10
+// If the size is negative or unset, the default of 10 is used.
 func WithSize(size int) Option {
 	return func(o *options) {
 		// Size must be a positive number
