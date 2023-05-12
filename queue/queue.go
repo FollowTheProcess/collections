@@ -16,13 +16,19 @@ var ErrPopFromEmptyQueue = errors.New("pop from empty queue")
 // A Queue should be instantiated by the New function and not directly,
 // doing so will result in a nil pointer dereference.
 type Queue[T any] struct {
-	container *[]T // Underlying slice
+	container *[]T    // Underlying slice
+	options   options // Options for the queue.
 }
 
 // New constructs and returns a new stack.
-func New[T any]() Queue[T] {
-	container := make([]T, 0) // Initialise the underlying slice
-	return Queue[T]{container: &container}
+func New[T any](options ...Option) Queue[T] {
+	queue := Queue[T]{}
+	for _, option := range options {
+		option(&queue.options)
+	}
+	container := make([]T, 0, queue.options.capacity)
+	queue.container = &container
+	return queue
 }
 
 // Push adds an item to the back of the queue.
@@ -62,6 +68,14 @@ func (q Queue[T]) Pop() (T, error) {
 //	s.Length() // 2
 func (q Queue[T]) Length() int {
 	return len(*q.container)
+}
+
+// Cap returns the current capacity of the queue.
+//
+//	s := queue.New[string](queue.WithCapacity(10))
+//	s.Cap() // 10
+func (q Queue[T]) Cap() int {
+	return cap(*q.container)
 }
 
 // IsEmpty returns whether or not the queue is empty.

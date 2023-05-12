@@ -20,12 +20,18 @@ import (
 // doing so will result in a nil pointer dereference.
 type Set[T comparable] struct {
 	container *map[T]struct{} // Underlying map with empty struct for minimal memory use
+	options   options         // Options for the set.
 }
 
 // New constructs and returns a new set for a specific comparable type.
-func New[T comparable]() Set[T] {
-	container := make(map[T]struct{}) // Initialise the underlying map
-	return Set[T]{container: &container}
+func New[T comparable](options ...Option) Set[T] {
+	set := Set[T]{}
+	for _, option := range options {
+		option(&set.options)
+	}
+	container := make(map[T]struct{}, set.options.size)
+	set.container = &container
+	return set
 }
 
 // Add adds an item to the set, if the item is
