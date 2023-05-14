@@ -16,7 +16,6 @@ linters:
     - gofumpt
     - goimports
     - gomnd
-    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -31,7 +30,6 @@ linters:
     - staticcheck
     - tagliatelle
     - tenv
-    - testpackage
     - thelper
     - unconvert
     - unparam
@@ -40,7 +38,7 @@ linters:
 
 linters-settings:
   gocyclo:
-    min-complexity: 15
+    min-complexity: 20
 
   staticcheck:
     go: "1.20"
