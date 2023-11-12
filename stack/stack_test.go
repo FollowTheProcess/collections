@@ -137,6 +137,21 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestNotNew(t *testing.T) {
+	s := stack.Stack[int]{}
+	s.Push(1)
+	s.Push(2)
+
+	first, err := s.Pop()
+	if err != nil {
+		t.Fatalf("stack.Pop() returned an unexpected error: %v", err)
+	}
+
+	if first != 2 {
+		t.Errorf("wrong item popped: got %d, wanted %d", first, 2)
+	}
+}
+
 func BenchmarkStack(b *testing.B) {
 	s := stack.New[int]()
 

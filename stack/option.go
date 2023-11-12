@@ -10,7 +10,8 @@ type Option func(*options)
 
 // WithCapacity sets the initial capacity of the stack.
 //
-// If the capacity is negative, the default of 0 is used.
+// If the capacity is negative, the default of 0 is used which is equivalent to
+// the capacity go allocates new slices.
 //
 //	s := stack.New[string](stack.WithCapacity(10))
 //	s.Cap() // 10
