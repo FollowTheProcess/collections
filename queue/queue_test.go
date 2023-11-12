@@ -127,6 +127,21 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestNotNew(t *testing.T) {
+	q := queue.Queue[int]{}
+	q.Push(1)
+	q.Push(2)
+
+	first, err := q.Pop()
+	if err != nil {
+		t.Fatalf("queue.Pop() returned an unexpected error: %v", err)
+	}
+
+	if first != 1 {
+		t.Errorf("wrong item popped: got %d, wanted %d", first, 1)
+	}
+}
+
 func BenchmarkQueue(b *testing.B) {
 	s := queue.New[int]()
 
