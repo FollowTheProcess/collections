@@ -128,8 +128,22 @@ func Union[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
 // Intersection returns a set containing all the items present in both a and b.
 func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
 	result := New[T]()
-	for item := range a.container {
-		if b.Contains(item) {
+
+	// Optimisation: iterate through the smallest one
+	var iterator *Set[T]
+	var other *Set[T]
+	if len(a.container) >= len(b.container) {
+		// a >= b, iterate through b and compare against a
+		iterator = b
+		other = a
+	} else {
+		// a < b, iterate through a and compare against b
+		iterator = a
+		other = b
+	}
+
+	for item := range iterator.container {
+		if other.Contains(item) {
 			result.Add(item)
 		}
 	}
