@@ -130,20 +130,15 @@ func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
 	result := New[T]()
 
 	// Optimisation: iterate through the smallest one
-	var iterator *Set[T]
-	var other *Set[T]
 	if len(a.container) >= len(b.container) {
 		// a >= b, iterate through b and compare against a
-		iterator = b
-		other = a
-	} else {
-		// a < b, iterate through a and compare against b
-		iterator = a
-		other = b
+		// we can just swap them in place
+		a, b = b, a
 	}
 
-	for item := range iterator.container {
-		if other.Contains(item) {
+	// If we swapped, 'a' is now 'b' and 'b' is now 'a'
+	for item := range a.container {
+		if b.Contains(item) {
 			result.Add(item)
 		}
 	}
