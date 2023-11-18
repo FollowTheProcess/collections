@@ -15,7 +15,7 @@ var ErrPopFromEmptyStack = errors.New("pop from empty stack")
 //
 // A Stack should be instantiated by the New function and not directly.
 type Stack[T any] struct {
-	container []T     // Underlying slice, reference to allow mutation.
+	container []T     // Underlying slice
 	options   options // Options for the stack.
 }
 
