@@ -1,6 +1,7 @@
 // Package stack implements a LIFO stack generic over any type.
 //
-// The stack is not safe for concurrent access by default, the caller must synchronise access.
+// The stack is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package stack
 
 import (
@@ -99,7 +100,7 @@ func (s *Stack[T]) Items() []T {
 	return append([]T{}, s.container...)
 }
 
-// String satisfies the stringer interface and allows a stack to be printed.
+// String satisfies the [fmt.Stringer] interface and allows a stack to be printed.
 func (s *Stack[T]) String() string {
 	return fmt.Sprintf("%v", s.container)
 }

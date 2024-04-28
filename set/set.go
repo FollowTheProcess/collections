@@ -7,7 +7,8 @@
 // when printing or converting to a slice is non-deterministic, the user should therefore sort the
 // results if a deterministic order is required.
 //
-// The set is not safe for concurrent access by default, the caller must synchronise access.
+// The set is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 //
 // [comparable]: https://golang.org/ref/spec#Comparison_operators
 package set
@@ -18,8 +19,7 @@ import (
 
 // Set is a hash set generic over any comparable type.
 //
-// A set should be instantiated by the New function and not directly,
-// doing so will result in a nil pointer dereference.
+// A set should be instantiated by the New function and not directly.
 type Set[T comparable] struct {
 	container map[T]struct{} // Underlying map with empty struct for minimal memory use
 	options   options        // Options for the set.
@@ -104,7 +104,7 @@ func (s *Set[T]) IsEmpty() bool {
 	return len(s.container) == 0
 }
 
-// String satisfies the stringer interface and allows a set to be printed.
+// String satisfies the [fmt.Stringer] interface and allows a set to be printed.
 func (s *Set[T]) String() string {
 	return fmt.Sprintf("%v", s.Items())
 }
