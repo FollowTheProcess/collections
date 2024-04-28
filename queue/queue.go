@@ -1,6 +1,7 @@
 // Package queue implements a FIFO queue generic over any type.
 //
-// The queue is implemented using an internal slice pointer, and is not thread safe.
+// The queue is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package queue
 
 import (
@@ -13,14 +14,13 @@ var ErrPopFromEmptyQueue = errors.New("pop from empty queue")
 
 // Queue is a FIFO queue generic over any type.
 //
-// A Queue should be instantiated by the New function and not directly,
-// doing so will result in a nil pointer dereference.
+// A Queue should be instantiated by the New function and not directly.
 type Queue[T any] struct {
 	container []T     // Underlying slice
 	options   options // Options for the queue.
 }
 
-// New constructs and returns a new stack.
+// New constructs and returns a new Queue.
 func New[T any](options ...Option) *Queue[T] {
 	queue := Queue[T]{}
 	for _, option := range options {
@@ -98,7 +98,7 @@ func (q *Queue[T]) Items() []T {
 	return append([]T{}, q.container...)
 }
 
-// String satisfies the stringer interface and allows a stack to be printed.
+// String satisfies the [fmt.Stringer] interface and allows a Queue to be printed.
 func (q *Queue[T]) String() string {
 	return fmt.Sprintf("%v", q.container)
 }

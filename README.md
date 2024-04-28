@@ -19,12 +19,12 @@ Small, useful, zero dependency implementations of generic collection data struct
 * Stacks
 * Queues
 
-I wrote these primarily for use in some of my other projects but they are useful enough to be applicable in most scenarios (thanks to Go 1.18 and generics!).
+I wrote these primarily for use in some of my other projects but they are useful enough to be applicable in most scenarios.
 
 ## Installation
 
 ```shell
-go get github.com/FollowTheProcess/collections
+go get github.com/FollowTheProcess/collections@latest
 ```
 
 ## Quickstart
