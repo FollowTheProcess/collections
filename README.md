@@ -15,7 +15,7 @@ Collection of generic data structures in Go 📦
 
 Small, useful, zero dependency implementations of generic collection data structures in Go:
 
-* Hash sets
+* Sets
 * Stacks
 * Queues
 
@@ -37,24 +37,24 @@ A set is an unordered collection of unique items offering fast lookup and member
 // Initialise a new set with a concrete type
 s := set.New[string]()
 
-// Add items to the set
-s.Add("hello")
-s.Add("sets")
-s.Add("in")
-s.Add("go")
+// Insert items to the set
+s.Insert("hello")
+s.Insert("sets")
+s.Insert("in")
+s.Insert("go")
 
 // All the methods you'd expect
 s.Contains("hello") // true
-s.Length() // 4
+s.Size() // 4
 
 // Remove an item,
 s.Remove("go")
-s.Length() // 3
+s.Size() // 3
 
 // Rich comparison with other sets
 other := set.New[string]()
-other.Add("hello")
-other.Add("more")
+other.Insert("hello")
+other.Insert("more")
 
 // Union: combine both sets into one
 set.Union(s, other) // ["hello", "in", "sets", "more", "go"]

@@ -7,28 +7,19 @@ package queue
 import (
 	"errors"
 	"fmt"
+	"slices"
 )
-
-// ErrPopFromEmptyQueue is returned when Pop() is called on an empty queue.
-var ErrPopFromEmptyQueue = errors.New("pop from empty queue")
 
 // Queue is a FIFO queue generic over any type.
 //
 // A Queue should be instantiated by the New function and not directly.
 type Queue[T any] struct {
-	container []T     // Underlying slice
-	options   options // Options for the queue.
+	container []T // Underlying slice
 }
 
 // New constructs and returns a new Queue.
-func New[T any](options ...Option) *Queue[T] {
-	queue := Queue[T]{}
-	for _, option := range options {
-		option(&queue.options)
-	}
-	container := make([]T, 0, queue.options.capacity)
-	queue.container = container
-	return &queue
+func New[T any]() *Queue[T] {
+	return &Queue[T]{}
 }
 
 // Push adds an item to the back of the queue.
@@ -40,7 +31,7 @@ func (q *Queue[T]) Push(item T) {
 }
 
 // Pop removes an item from the front of the queue, if the queue
-// is empty, ErrPopFromEmptyQueue will be returned.
+// is empty, an error will be returned.
 //
 //	q := queue.New[string]()
 //	q.Push("hello")
@@ -51,7 +42,7 @@ func (q *Queue[T]) Pop() (T, error) {
 	l := len(q.container)
 	if l == 0 {
 		var none T
-		return none, ErrPopFromEmptyQueue
+		return none, errors.New("pop from empty queue")
 	}
 	item := (q.container)[0]
 	q.container = (q.container)[1:]
@@ -70,21 +61,13 @@ func (q *Queue[T]) Length() int {
 	return len(q.container)
 }
 
-// Cap returns the current capacity of the queue.
-//
-//	s := queue.New[string](queue.WithCapacity(10))
-//	s.Cap() // 10
-func (q *Queue[T]) Cap() int {
-	return cap(q.container)
-}
-
-// IsEmpty returns whether or not the queue is empty.
+// Empty returns whether or not the queue is empty.
 //
 //	s := queue.New[string]()
-//	s.IsEmpty() // true
+//	s.Empty() // true
 //	s.Push("hello")
-//	s.IsEmpty() // false
-func (q *Queue[T]) IsEmpty() bool {
+//	s.Empty() // false
+func (q *Queue[T]) Empty() bool {
 	return len(q.container) == 0
 }
 
@@ -95,7 +78,7 @@ func (q *Queue[T]) IsEmpty() bool {
 //	q.Push("there")
 //	q.Items() // [hello there]
 func (q *Queue[T]) Items() []T {
-	return append([]T{}, q.container...)
+	return slices.Clone(q.container)
 }
 
 // String satisfies the [fmt.Stringer] interface and allows a Queue to be printed.

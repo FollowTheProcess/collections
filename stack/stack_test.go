@@ -1,16 +1,17 @@
 package stack_test
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/FollowTheProcess/collections/stack"
+	"github.com/FollowTheProcess/test"
 )
 
 func TestIsEmpty(t *testing.T) {
 	s := stack.New[string]()
 
-	if !s.IsEmpty() {
+	if !s.Empty() {
 		t.Error("IsEmpty should return true")
 	}
 
@@ -19,38 +20,7 @@ func TestIsEmpty(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	if s.IsEmpty() {
-		t.Error("IsEmpty should return false")
-	}
-}
-
-func TestLength(t *testing.T) {
-	s := stack.New[string]()
-	s.Push("hello")
-	s.Push("there")
-	s.Push("general")
-	s.Push("kenobi")
-
-	if s.Length() != 4 {
-		t.Errorf("wrong length: got %d, wanted %d", s.Length(), 4)
-	}
-}
-
-func TestCap(t *testing.T) {
-	s := stack.New[int](stack.WithCapacity(10))
-	if s.Cap() != 10 {
-		t.Errorf("wrong capacity: got %d, wanted %d", s.Cap(), 10)
-	}
-
-	s2 := stack.New[int]()
-	if s2.Cap() != 0 {
-		t.Errorf("wrong capacity: got %d, wanted %d", s2.Cap(), 0)
-	}
-
-	s3 := stack.New[int](stack.WithCapacity(-1))
-	if s3.Cap() != 0 {
-		t.Errorf("wrong capacity: got %d, wanted %d", s3.Cap(), 0)
-	}
+	test.False(t, s.Empty()) // Empty should not be false
 }
 
 func TestPop(t *testing.T) {
@@ -61,52 +31,45 @@ func TestPop(t *testing.T) {
 	s.Push("kenobi")
 
 	item, err := s.Pop()
-	if err != nil {
-		t.Errorf("Pop() returned an error: %v", err)
-	}
-	if item != "kenobi" {
-		t.Errorf("wrong item popped: got %q, wanted %q", item, "kenobi")
-	}
+	test.Ok(t, err)
+	test.Equal(t, item, "kenobi")
 
 	item, err = s.Pop()
-	if err != nil {
-		t.Errorf("Pop() returned an error: %v", err)
-	}
-	if item != "general" {
-		t.Errorf("wrong item popped: got %q, wanted %q", item, "general")
-	}
+	test.Ok(t, err)
+	test.Equal(t, item, "general")
 
 	item, err = s.Pop()
-	if err != nil {
-		t.Errorf("Pop() returned an error: %v", err)
-	}
-	if item != "there" {
-		t.Errorf("wrong item popped: got %q, wanted %q", item, "there")
-	}
+	test.Ok(t, err)
+	test.Equal(t, item, "there")
 
 	item, err = s.Pop()
-	if err != nil {
-		t.Errorf("Pop() returned an error: %v", err)
-	}
-	if item != "hello" {
-		t.Errorf("wrong item popped: got %q, wanted %q", item, "hello")
-	}
+	test.Ok(t, err)
+	test.Equal(t, item, "hello")
 
 	// Try one more pop, should error
 	item, err = s.Pop()
-	if err == nil {
-		t.Error("expected pop from empty stack error, got nil")
-	}
+	test.Err(t, err)        // Pop from empty stack should error
+	test.Equal(t, item, "") // Item should be the zero value
+}
 
-	// Err should be a ErrPopFromEmptyStack
-	if err != stack.ErrPopFromEmptyStack {
-		t.Errorf("wrong error returned: got %v, wanted %v", err, stack.ErrPopFromEmptyStack)
-	}
+func TestNotNew(t *testing.T) {
+	s := stack.Stack[int]{}
+	s.Push(1)
+	s.Push(2)
 
-	// Item should be the zero value for the type
-	if item != "" {
-		t.Errorf("empty pop should be zero value: got %q, wanted %q", item, "")
-	}
+	first, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, 2)
+}
+
+func TestLength(t *testing.T) {
+	s := stack.New[string]()
+	s.Push("hello")
+	s.Push("there")
+	s.Push("general")
+	s.Push("kenobi")
+
+	test.Equal(t, s.Length(), 4)
 }
 
 func TestItems(t *testing.T) {
@@ -118,9 +81,7 @@ func TestItems(t *testing.T) {
 
 	want := []string{"hello", "there", "general", "kenobi"}
 
-	if !reflect.DeepEqual(s.Items(), want) {
-		t.Errorf("wrong items: got %v, wanted %v", s.Items(), want)
-	}
+	test.EqualFunc(t, s.Items(), want, slices.Equal)
 }
 
 func TestString(t *testing.T) {
@@ -132,24 +93,7 @@ func TestString(t *testing.T) {
 
 	want := "[hello there general kenobi]"
 
-	if s.String() != want {
-		t.Errorf("wrong string: got %s, wanted %s", s.String(), want)
-	}
-}
-
-func TestNotNew(t *testing.T) {
-	s := stack.Stack[int]{}
-	s.Push(1)
-	s.Push(2)
-
-	first, err := s.Pop()
-	if err != nil {
-		t.Fatalf("stack.Pop() returned an unexpected error: %v", err)
-	}
-
-	if first != 2 {
-		t.Errorf("wrong item popped: got %d, wanted %d", first, 2)
-	}
+	test.Equal(t, s.String(), want)
 }
 
 func BenchmarkStack(b *testing.B) {
