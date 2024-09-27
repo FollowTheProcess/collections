@@ -60,6 +60,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     name: Lint
@@ -75,9 +76,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
-      - name: Clean Mod Cache # See https://github.com/golangci/golangci-lint-action/issues/135
-        run: go clean -modcache
 
       - name: Run Linting
         uses: golangci/golangci-lint-action@v6
