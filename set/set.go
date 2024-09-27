@@ -1,4 +1,7 @@
 // Package set implements a simple, generic set data structure.
+//
+// The set is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package set
 
 import (
