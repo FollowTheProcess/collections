@@ -1,159 +1,107 @@
-// Package set implements a hash set, generic over any comparable type and associated functionality
-// such as intersection, union and difference.
-//
-// Because the values in the set are stored in an underlying hash table, the values must be [comparable].
-//
-// The hash set implemented here is an unordered collection and as such the ordering of the items
-// when printing or converting to a slice is non-deterministic, the user should therefore sort the
-// results if a deterministic order is required.
-//
-// The set is not safe for concurrent access across goroutines, the caller is responsible for
-// synchronising concurrent access.
-//
-// [comparable]: https://golang.org/ref/spec#Comparison_operators
+// Package set implements a simple, generic set data structure.
 package set
 
 import (
 	"fmt"
 )
 
-// Set is a hash set generic over any comparable type.
-//
-// A set should be instantiated by the New function and not directly.
+// Set is a simple, generic implementation of a mathematical set.
 type Set[T comparable] struct {
-	container map[T]struct{} // Underlying map with empty struct for minimal memory use
-	options   options        // Options for the set.
+	container map[T]struct{}
 }
 
-// New constructs and returns a new set for a specific comparable type.
-func New[T comparable](options ...Option) *Set[T] {
-	set := Set[T]{}
-	for _, option := range options {
-		option(&set.options)
-	}
-	container := make(map[T]struct{}, set.options.size)
-	set.container = container
-	return &set
-}
-
-// Add adds an item to the set, if the item is
-// already present, Add becomes a no-op.
+// New builds and returns a new empty [Set].
 //
-//	s := set.New[string]()
-//	s.Add("hello")
-func (s *Set[T]) Add(item T) {
-	if _, ok := s.container[item]; !ok {
-		s.container[item] = struct{}{}
+// The set will grow as needed as items are inserted, an initial small
+// size is allocated.
+//
+// If constructing a set from a pre-existing slice of items, use [From]
+// which will preallocate the set with the appropriate size.
+func New[T comparable]() *Set[T] {
+	return &Set[T]{
+		container: make(map[T]struct{}),
 	}
 }
 
-// Remove removes an item from the set, if the item is
-// not present, Remove becomes a no-op.
+// From builds a [Set] from an existing slice of items.
 //
-//	s := set.New[string]()
-//	s.Add("hello")
-//	s.Add("there")
-//	s.Remove("there")
-//	s.Items() // [hello]
-func (s *Set[T]) Remove(item T) {
-	delete(s.container, item)
+// The set will be preallocated the size of len(items).
+func From[T comparable](items []T) *Set[T] {
+	set := &Set[T]{
+		container: make(map[T]struct{}, len(items)),
+	}
+	for _, item := range items {
+		set.Insert(item)
+	}
+	return set
 }
 
-// Contains returns whether or not the set contains the given item.
+// Insert inserts an item into the [Set].
+//
+// Returns whether the item was newly inserted. Inserting an item that
+// is already present is effectively a no-op.
+//
+//	s := set.New[string]()
+//	s.Insert("foo") // true -> set was modified by the insertion
+//	s.Insert("foo") // false -> "foo" is already in the set, it was not modified
+func (s *Set[T]) Insert(item T) bool {
+	// Indexing into a nil map doesn't panic, which is why we can do this
+	// first safely
+	if _, exists := s.container[item]; exists {
+		return false
+	}
+
+	// nil safety
+	if s.container == nil {
+		s.container = make(map[T]struct{})
+	}
+
+	s.container[item] = struct{}{}
+	return true
+}
+
+// Contains reports whether the set contains item.
 //
 //	s := set.New[int]()
-//	s.Contains(27) // false
-//	s.Add(27)
-//	s.Contains(27) // true
+//	s.Contains(1) // false
+//	s.Insert(1)
+//	s.Contains(1) // true
 func (s *Set[T]) Contains(item T) bool {
-	_, ok := s.container[item]
-	return ok
+	_, exists := s.container[item]
+	return exists
 }
 
-// Items returns all the items in the set as a slice.
+// Remove removes an item from the set.
 //
-//	s := set.New[string]()
-//	s.Add("hello")
-//	s.Add("there")
-//	s.Items() // [hello there]
+// Returns whether the value was present. Removing an item
+// that wasn't in the set is effectively a no-op.
+func (s *Set[T]) Remove(item T) bool {
+	if _, exists := s.container[item]; !exists {
+		return false
+	}
+	delete(s.container, item)
+	return true
+}
+
+// Size returns the current size of the set.
+func (s *Set[T]) Size() int {
+	return len(s.container)
+}
+
+// Items returns the set's items as a slice.
+//
+// The order of the items is non-deterministic, the caller should
+// sort the returned slice if order is important.
 func (s *Set[T]) Items() []T {
-	items := make([]T, 0, len(s.container))
-	for k := range s.container {
-		items = append(items, k)
+	items := make([]T, 0, s.Size())
+	for item := range s.container {
+		items = append(items, item)
 	}
 	return items
 }
 
-// Length returns the number of elements in the set.
-//
-//	s := set.New[int]()
-//	s.Add(42)
-//	s.Add(27)
-//	s.Length() // 2
-func (s *Set[T]) Length() int {
-	return len(s.container)
-}
-
-// IsEmpty returns whether or not the set is empty.
-//
-//	s := set.New[string]()
-//	s.IsEmpty() // true
-//	s.Add("a thing")
-//	s.IsEmpty() // false
-func (s *Set[T]) IsEmpty() bool {
-	return len(s.container) == 0
-}
-
-// String satisfies the [fmt.Stringer] interface and allows a set to be printed.
+// String implements [fmt.Stringer] for a [Set] and allows
+// it to print itself.
 func (s *Set[T]) String() string {
 	return fmt.Sprintf("%v", s.Items())
-}
-
-// Union returns a set that is the combination of a and b.
-func Union[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
-	result := New[T]()
-	for item := range a.container {
-		result.Add(item)
-	}
-
-	for item := range b.container {
-		if !result.Contains(item) {
-			result.Add(item)
-		}
-	}
-
-	return result
-}
-
-// Intersection returns a set containing all the items present in both a and b.
-func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
-	result := New[T]()
-
-	// Optimisation: iterate through the smallest one
-	if len(a.container) >= len(b.container) {
-		// a >= b, iterate through b and compare against a
-		// we can just swap them in place
-		a, b = b, a
-	}
-
-	// If we swapped, 'a' is now 'b' and 'b' is now 'a'
-	for item := range a.container {
-		if b.Contains(item) {
-			result.Add(item)
-		}
-	}
-
-	return result
-}
-
-// Difference returns a set containing the items present in a but not b.
-func Difference[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
-	result := New[T]()
-	for item := range a.container {
-		if !b.Contains(item) {
-			result.Add(item)
-		}
-	}
-
-	return result
 }
