@@ -1,7 +1,9 @@
 package set_test
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/FollowTheProcess/collections/set"
@@ -11,6 +13,8 @@ import (
 func TestInsert(t *testing.T) {
 	t.Run("strings", func(t *testing.T) {
 		s := set.New[string]()
+
+		test.True(t, s.Empty()) // Initial set was not empty
 
 		test.True(t, s.Insert("foo"))    // Inserting foo for the first time should return true
 		test.False(t, s.Insert("foo"))   // Second insert of foo should return false
@@ -105,4 +109,203 @@ func TestItems(t *testing.T) {
 	got := set.Items()
 	slices.Sort(got)
 	test.EqualFunc(t, got, items, slices.Equal)
+}
+
+func TestUnion(t *testing.T) {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+	this.Insert("general")
+	this.Insert("kenobi")
+
+	that.Insert("hello")
+	that.Insert("to")
+	that.Insert("you")
+	that.Insert("too")
+
+	union := set.Union(this, that).Items()
+	slices.Sort(union)
+
+	want := []string{"general", "hello", "kenobi", "there", "to", "too", "you"}
+
+	test.EqualFunc(t, union, want, slices.Equal)
+}
+
+func TestIntersection(t *testing.T) {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+	this.Insert("general")
+	this.Insert("kenobi")
+
+	that.Insert("hello")
+	that.Insert("to")
+	that.Insert("you")
+	that.Insert("too")
+
+	intersection := set.Intersection(this, that).Items()
+	slices.Sort(intersection)
+
+	want := []string{"hello"}
+
+	test.EqualFunc(t, intersection, want, slices.Equal)
+}
+
+func TestDifference(t *testing.T) {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+	this.Insert("general")
+	this.Insert("kenobi")
+
+	that.Insert("hello")
+	that.Insert("to")
+	that.Insert("you")
+	that.Insert("too")
+
+	difference := set.Difference(this, that).Items()
+	slices.Sort(difference)
+
+	want := []string{"general", "kenobi", "there"}
+
+	test.EqualFunc(t, difference, want, slices.Equal)
+}
+
+func TestString(t *testing.T) {
+	s := set.New[string]()
+
+	s.Insert("cheese")
+	s.Insert("apples")
+	s.Insert("oranges")
+	s.Insert("wine")
+
+	got := s.String()
+
+	// A set is an unordered collection and it's pointless to sort just for string representation
+	// so we just check the existence of the items
+	targets := []string{"cheese", "apples", "oranges", "wine"}
+	for _, target := range targets {
+		test.True(t, strings.Contains(got, target))
+	}
+}
+
+func ExampleUnion() {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+
+	that.Insert("general")
+	that.Insert("kenobi")
+	that.Insert("says")
+	that.Insert("hello")
+
+	// Get the items in a slice of strings
+	union := set.Union(this, that).Items()
+	slices.Sort(union) // A set is an unordered collection
+
+	fmt.Println(union)
+	// Output: [general hello kenobi says there]
+}
+
+func ExampleIntersection() {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+
+	that.Insert("general")
+	that.Insert("kenobi")
+	that.Insert("says")
+	that.Insert("hello")
+
+	// Get the items in a slice of strings
+	intersection := set.Intersection(this, that).Items()
+	slices.Sort(intersection) // A set is an unordered collection
+
+	fmt.Println(intersection)
+	// Output: [hello]
+}
+
+func ExampleDifference() {
+	this := set.New[string]()
+	that := set.New[string]()
+
+	this.Insert("hello")
+	this.Insert("there")
+
+	that.Insert("general")
+	that.Insert("kenobi")
+	that.Insert("says")
+	that.Insert("hello")
+
+	// Get the items in a slice of strings
+	difference := set.Difference(this, that).Items()
+	slices.Sort(difference) // A set is an unordered collection
+
+	fmt.Println(difference)
+	// Output: [there]
+}
+
+func BenchmarkIntersection(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		set.Intersection(s1, s2)
+	}
+}
+
+func BenchmarkInsert(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := set.New[int]()
+		for j := 0; j < 1000; j++ {
+			s.Insert(j)
+		}
+	}
+}
+
+func BenchmarkUnion(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		set.Union(s1, s2)
+	}
+}
+
+func BenchmarkDifference(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		set.Difference(s1, s2)
+	}
 }

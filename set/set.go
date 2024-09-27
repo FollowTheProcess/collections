@@ -100,8 +100,63 @@ func (s *Set[T]) Items() []T {
 	return items
 }
 
+// Empty reports whether the set is empty.
+func (s *Set[T]) Empty() bool {
+	return len(s.container) == 0
+}
+
 // String implements [fmt.Stringer] for a [Set] and allows
 // it to print itself.
 func (s *Set[T]) String() string {
 	return fmt.Sprintf("%v", s.Items())
+}
+
+// Union returns a set that is the combination of a and b, i.e. all
+// the items from both sets combined into one, with no duplicates.
+func Union[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+	union := New[T]()
+
+	for item := range a.container {
+		union.Insert(item)
+	}
+
+	for item := range b.container {
+		union.Insert(item)
+	}
+
+	return union
+}
+
+// Intersection returns a set containing all the items present in both a and b.
+func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+	// Take copies so as not to alter the original sets when we swap
+	larger := a
+	smaller := b
+
+	intersection := New[T]()
+
+	// Optimisation: iterate through the smallest one
+	if a.Size() < b.Size() {
+		larger, smaller = b, a
+	}
+
+	for item := range smaller.container {
+		if larger.Contains(item) {
+			intersection.Insert(item)
+		}
+	}
+
+	return intersection
+}
+
+// Difference returns a set containing the items present in a but not b.
+func Difference[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+	result := New[T]()
+	for item := range a.container {
+		if !b.Contains(item) {
+			result.Insert(item)
+		}
+	}
+
+	return result
 }
