@@ -7,6 +7,7 @@ package stack
 import (
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // Stack is a LIFO stack generic over any type.
@@ -62,14 +63,6 @@ func (s *Stack[T]) Length() int {
 	return len(s.container)
 }
 
-// Cap returns the current capacity of the stack.
-//
-//	s := stack.New[string](stack.WithCapacity(10))
-//	s.Cap() // 10
-func (s *Stack[T]) Cap() int {
-	return cap(s.container)
-}
-
 // Empty returns whether or not the stack is empty.
 //
 //	s := stack.New[string]()
@@ -87,7 +80,7 @@ func (s *Stack[T]) Empty() bool {
 //	s.Push("there")
 //	s.Items() // [hello there]
 func (s *Stack[T]) Items() []T {
-	return append([]T{}, s.container...)
+	return slices.Clone(s.container)
 }
 
 // String satisfies the [fmt.Stringer] interface and allows a stack to be printed.
