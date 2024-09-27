@@ -4,54 +4,93 @@
 // synchronising concurrent access.
 package stack
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
-// Stack is a LIFO stack.
+// Stack is a LIFO stack generic over any type.
+//
+// A Stack should be instantiated by the New function and not directly.
 type Stack[T any] struct {
-	top *element[T] // The stack top pointer
+	container []T // Underlying slice
 }
 
-// element is an element stored in the stack.
-type element[T any] struct {
-	item T           // The actual item
-	next *element[T] // A pointer to the next element, or nil if there is none
-}
-
-// New returns a new [Stack].
+// New constructs and returns a new stack.
 func New[T any]() *Stack[T] {
 	return &Stack[T]{}
 }
 
-// Push pushes a new item onto the top of the stack.
-func (s *Stack[T]) Push(item T) {
-	elem := &element[T]{
-		item: item,
-		next: s.top, // Store the old top as the next one down
-	}
-
-	// Make this one the new top
-	s.top = elem
-}
-
-// Pop pops an item off the top of the stack.
+// Push adds an item to the top of stack.
 //
-// If the stack is empty, an error will be returned.
-func (s *Stack[T]) Pop() (T, error) {
-	if s.top == nil {
-		return *new(T), errors.New("pop from empty stack")
-	}
-
-	// Get the thing off the stack top
-	toReturn := s.top
-
-	// Move the top down one
-	s.top = toReturn.next
-	toReturn.next = nil
-
-	return toReturn.item, nil
+//	s := stack.New[string]()
+//	s.Push("hello")
+func (s *Stack[T]) Push(item T) {
+	s.container = append(s.container, item)
 }
 
-// Empty reports whether the stack is empty.
+// Pop removes an item from the top of the stack, if the stack
+// is empty, an error will be returned.
+//
+//	s := stack.New[string]()
+//	s.Push("hello")
+//	s.Push("there")
+//	s.Push("general")
+//	s.Push("kenobi")
+//
+//	item, _ := s.Pop()
+//	fmt.Println(item) // "kenobi"
+func (s *Stack[T]) Pop() (T, error) {
+	l := len(s.container)
+	if l == 0 {
+		var none T
+		return none, errors.New("pop from empty stack")
+	}
+	item := s.container[l-1]
+	s.container = s.container[:l-1]
+
+	return item, nil
+}
+
+// Length returns the number of items in the stack.
+//
+//	s := stack.New[string]()
+//	s.Push("hello")
+//	s.Push("there")
+//	s.Length() // 2
+func (s *Stack[T]) Length() int {
+	return len(s.container)
+}
+
+// Cap returns the current capacity of the stack.
+//
+//	s := stack.New[string](stack.WithCapacity(10))
+//	s.Cap() // 10
+func (s *Stack[T]) Cap() int {
+	return cap(s.container)
+}
+
+// Empty returns whether or not the stack is empty.
+//
+//	s := stack.New[string]()
+//	s.Empty() // true
+//	s.Push("hello")
+//	s.Empty() // false
 func (s *Stack[T]) Empty() bool {
-	return s.top == nil
+	return len(s.container) == 0
+}
+
+// Items returns the items in the stack as a new slice (copy).
+//
+//	s := stack.New[string]()
+//	s.Push("hello")
+//	s.Push("there")
+//	s.Items() // [hello there]
+func (s *Stack[T]) Items() []T {
+	return append([]T{}, s.container...)
+}
+
+// String satisfies the [fmt.Stringer] interface and allows a stack to be printed.
+func (s *Stack[T]) String() string {
+	return fmt.Sprintf("%v", s.container)
 }

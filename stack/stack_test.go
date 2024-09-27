@@ -1,6 +1,7 @@
 package stack_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/FollowTheProcess/collections/stack"
@@ -59,6 +60,40 @@ func TestNotNew(t *testing.T) {
 	first, err := s.Pop()
 	test.Ok(t, err)
 	test.Equal(t, first, 2)
+}
+
+func TestLength(t *testing.T) {
+	s := stack.New[string]()
+	s.Push("hello")
+	s.Push("there")
+	s.Push("general")
+	s.Push("kenobi")
+
+	test.Equal(t, s.Length(), 4)
+}
+
+func TestItems(t *testing.T) {
+	s := stack.New[string]()
+	s.Push("hello")
+	s.Push("there")
+	s.Push("general")
+	s.Push("kenobi")
+
+	want := []string{"hello", "there", "general", "kenobi"}
+
+	test.EqualFunc(t, s.Items(), want, slices.Equal)
+}
+
+func TestString(t *testing.T) {
+	s := stack.New[string]()
+	s.Push("hello")
+	s.Push("there")
+	s.Push("general")
+	s.Push("kenobi")
+
+	want := "[hello there general kenobi]"
+
+	test.Equal(t, s.String(), want)
 }
 
 func BenchmarkStack(b *testing.B) {
