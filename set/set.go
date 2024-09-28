@@ -6,6 +6,8 @@ package set
 
 import (
 	"fmt"
+	"iter"
+	"slices"
 )
 
 // Set is a simple, generic implementation of a mathematical set.
@@ -91,16 +93,18 @@ func (s *Set[T]) Size() int {
 	return len(s.container)
 }
 
-// Items returns the set's items as a slice.
+// Items returns the an iterator over the sets items.
 //
-// The order of the items is non-deterministic, the caller should
-// sort the returned slice if order is important.
-func (s *Set[T]) Items() []T {
-	items := make([]T, 0, s.Size())
-	for item := range s.container {
-		items = append(items, item)
+// The order of the items is non-deterministic, the caller should collect
+// and sort the returned items if order is important.
+func (s *Set[T]) Items() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for item := range s.container {
+			if !yield(item) {
+				return
+			}
+		}
 	}
-	return items
 }
 
 // Empty reports whether the set is empty.
@@ -111,7 +115,7 @@ func (s *Set[T]) Empty() bool {
 // String implements [fmt.Stringer] for a [Set] and allows
 // it to print itself.
 func (s *Set[T]) String() string {
-	return fmt.Sprintf("%v", s.Items())
+	return fmt.Sprintf("%v", slices.Collect(s.Items()))
 }
 
 // Union returns a set that is the combination of a and b, i.e. all

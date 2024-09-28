@@ -80,7 +80,7 @@ s.Push("stacks")
 s.Push("in")
 s.Push("go")
 
-s.Length() // 4
+s.Size() // 4
 
 // Pop items off the stack in LIFO order
 item, _ := s.Pop()
@@ -114,7 +114,7 @@ q.Push("queues")
 q.Push("in")
 q.Push("go")
 
-q.Length() // 4
+q.Size() // 4
 
 // Pop items off the front of the queue
 item, _ := q.Pop()

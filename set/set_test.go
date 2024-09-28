@@ -106,8 +106,7 @@ func TestItems(t *testing.T) {
 	slices.Sort(items)
 	set := set.From(items)
 
-	got := set.Items()
-	slices.Sort(got)
+	got := slices.Sorted(set.Items())
 	test.EqualFunc(t, got, items, slices.Equal)
 }
 
@@ -125,8 +124,7 @@ func TestUnion(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	union := set.Union(this, that).Items()
-	slices.Sort(union)
+	union := slices.Sorted(set.Union(this, that).Items())
 
 	want := []string{"general", "hello", "kenobi", "there", "to", "too", "you"}
 
@@ -147,8 +145,7 @@ func TestIntersection(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	intersection := set.Intersection(this, that).Items()
-	slices.Sort(intersection)
+	intersection := slices.Sorted(set.Intersection(this, that).Items())
 
 	want := []string{"hello"}
 
@@ -169,8 +166,7 @@ func TestDifference(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	difference := set.Difference(this, that).Items()
-	slices.Sort(difference)
+	difference := slices.Sorted(set.Difference(this, that).Items())
 
 	want := []string{"general", "kenobi", "there"}
 
@@ -207,9 +203,8 @@ func ExampleUnion() {
 	that.Insert("says")
 	that.Insert("hello")
 
-	// Get the items in a slice of strings
-	union := set.Union(this, that).Items()
-	slices.Sort(union) // A set is an unordered collection
+	// Get the union in a slice of strings
+	union := slices.Sorted(set.Union(this, that).Items()) // A set is unordered
 
 	fmt.Println(union)
 	// Output: [general hello kenobi says there]
@@ -228,8 +223,7 @@ func ExampleIntersection() {
 	that.Insert("hello")
 
 	// Get the items in a slice of strings
-	intersection := set.Intersection(this, that).Items()
-	slices.Sort(intersection) // A set is an unordered collection
+	intersection := slices.Sorted(set.Intersection(this, that).Items())
 
 	fmt.Println(intersection)
 	// Output: [hello]
@@ -248,8 +242,7 @@ func ExampleDifference() {
 	that.Insert("hello")
 
 	// Get the items in a slice of strings
-	difference := set.Difference(this, that).Items()
-	slices.Sort(difference) // A set is an unordered collection
+	difference := slices.Sorted(set.Difference(this, that).Items())
 
 	fmt.Println(difference)
 	// Output: [there]
