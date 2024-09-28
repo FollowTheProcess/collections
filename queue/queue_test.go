@@ -27,7 +27,7 @@ func TestLength(t *testing.T) {
 	q.Push("general")
 	q.Push("kenobi")
 
-	test.Equal(t, q.Length(), 4)
+	test.Equal(t, q.Size(), 4)
 }
 
 func TestPop(t *testing.T) {
@@ -66,8 +66,9 @@ func TestItems(t *testing.T) {
 	q.Push("kenobi")
 
 	want := []string{"hello", "there", "general", "kenobi"}
+	got := slices.Collect(q.Items())
 
-	test.EqualFunc(t, q.Items(), want, slices.Equal)
+	test.EqualFunc(t, got, want, slices.Equal)
 }
 
 func TestString(t *testing.T) {

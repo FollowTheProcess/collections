@@ -7,7 +7,7 @@ package stack
 import (
 	"errors"
 	"fmt"
-	"slices"
+	"iter"
 )
 
 // Stack is a LIFO stack generic over any type.
@@ -53,13 +53,13 @@ func (s *Stack[T]) Pop() (T, error) {
 	return item, nil
 }
 
-// Length returns the number of items in the stack.
+// Size returns the number of items in the stack.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
 //	s.Push("there")
-//	s.Length() // 2
-func (s *Stack[T]) Length() int {
+//	s.Size() // 2
+func (s *Stack[T]) Size() int {
 	return len(s.container)
 }
 
@@ -73,14 +73,20 @@ func (s *Stack[T]) Empty() bool {
 	return len(s.container) == 0
 }
 
-// Items returns the items in the stack as a new slice (copy).
+// Items returns the an iterator over the stack in LIFO order.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
 //	s.Push("there")
-//	s.Items() // [hello there]
-func (s *Stack[T]) Items() []T {
-	return slices.Clone(s.container)
+//	slices.Collect(s.Items()) // [there hello]
+func (s *Stack[T]) Items() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := len(s.container) - 1; i >= 0; i-- {
+			if !yield(s.container[i]) {
+				return
+			}
+		}
+	}
 }
 
 // String satisfies the [fmt.Stringer] interface and allows a stack to be printed.

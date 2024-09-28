@@ -69,7 +69,7 @@ func TestLength(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	test.Equal(t, s.Length(), 4)
+	test.Equal(t, s.Size(), 4)
 }
 
 func TestItems(t *testing.T) {
@@ -79,9 +79,10 @@ func TestItems(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	want := []string{"hello", "there", "general", "kenobi"}
+	want := []string{"kenobi", "general", "there", "hello"}
+	got := slices.Collect(s.Items())
 
-	test.EqualFunc(t, s.Items(), want, slices.Equal)
+	test.EqualFunc(t, got, want, slices.Equal)
 }
 
 func TestString(t *testing.T) {

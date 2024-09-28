@@ -7,7 +7,7 @@ package queue
 import (
 	"errors"
 	"fmt"
-	"slices"
+	"iter"
 )
 
 // Queue is a FIFO queue generic over any type.
@@ -50,14 +50,14 @@ func (q *Queue[T]) Pop() (T, error) {
 	return item, nil
 }
 
-// Length returns the number of items in the queue.
+// Size returns the number of items in the queue.
 //
 //	s := queue.New[string]()
-//	s.Length() // 0
+//	s.Size() // 0
 //	s.Push("hello")
 //	s.Push("there")
-//	s.Length() // 2
-func (q *Queue[T]) Length() int {
+//	s.Size() // 2
+func (q *Queue[T]) Size() int {
 	return len(q.container)
 }
 
@@ -71,14 +71,20 @@ func (q *Queue[T]) Empty() bool {
 	return len(q.container) == 0
 }
 
-// Items returns the items in the queue as a new slice (copy).
+// Items returns the an iterator over the queue in FIFO order.
 //
 //	q := queue.New[string]()
 //	q.Push("hello")
 //	q.Push("there")
-//	q.Items() // [hello there]
-func (q *Queue[T]) Items() []T {
-	return slices.Clone(q.container)
+//	qlices.Collect(s.Items()) // [hello there]
+func (q *Queue[T]) Items() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, item := range q.container {
+			if !yield(item) {
+				return
+			}
+		}
+	}
 }
 
 // String satisfies the [fmt.Stringer] interface and allows a Queue to be printed.

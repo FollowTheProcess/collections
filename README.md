@@ -9,7 +9,8 @@
 
 Collection of generic data structures in Go 📦
 
-* Free software: MIT License
+> [!TIP]
+> Most collections support the Go 1.23 functional iterator pattern
 
 ## Project Description
 
@@ -18,8 +19,6 @@ Small, useful, zero dependency implementations of generic collection data struct
 * Sets
 * Stacks
 * Queues
-
-I wrote these primarily for use in some of my other projects but they are useful enough to be applicable in most scenarios.
 
 ## Installation
 
@@ -80,7 +79,7 @@ s.Push("stacks")
 s.Push("in")
 s.Push("go")
 
-s.Length() // 4
+s.Size() // 4
 
 // Pop items off the stack in LIFO order
 item, _ := s.Pop()
@@ -114,7 +113,7 @@ q.Push("queues")
 q.Push("in")
 q.Push("go")
 
-q.Length() // 4
+q.Size() // 4
 
 // Pop items off the front of the queue
 item, _ := q.Pop()
