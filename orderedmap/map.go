@@ -68,8 +68,29 @@ func (m *Map[K, V]) Insert(key K, value V) (val V, existed bool) {
 	return value, false
 }
 
+// Remove removes a key from the map, returning the stored value and
+// a boolean to indicate whether it was in the map to begin with.
+//
+// If the value was in the map, the removed value and true are returned, if not
+// the zero value for the value type and false are returned.
+func (m *Map[K, V]) Remove(key K) (value V, existed bool) {
+	if entry, existed := m.inner[key]; existed {
+		m.list.Remove(entry.node) // Drop it from our list
+		delete(m.inner, key)      // And the map
+		return entry.value, true
+	}
+
+	// Didn't exist, just return
+	var zero V
+	return zero, false
+}
+
 // Size returns the number of items currently stored in the map. This operation
 // is O(1).
 func (m *Map[K, V]) Size() int {
 	return m.list.Len()
 }
+
+// TODO(@FollowTheProcess): Oldest and Newest functions to return the oldest and newest item in the map
+// TODO(@FollowTheProcess): Implement iterators to go from oldest to newest and in reverse
+// TODO(@FollowTheProcess): Do I want an Upsert API? GetOrInsert?
