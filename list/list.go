@@ -12,18 +12,28 @@ import (
 	"iter"
 )
 
-// element is a single element in the list.
-type element[T any] struct {
-	item T           // The actual item stored in the list
-	prev *element[T] // The previous element in the list
-	next *element[T] // The next element in the list
+// Node is a single Node in the list.
+type Node[T any] struct {
+	item T        // The actual item stored in the list
+	prev *Node[T] // The previous element in the list
+	next *Node[T] // The next element in the list
+}
+
+// NewNode returns a new list [Node].
+func NewNode[T any](item T) *Node[T] {
+	return &Node[T]{item: item}
+}
+
+// Item returns the item stored in the [Node].
+func (n *Node[T]) Item() T {
+	return n.item
 }
 
 // List is a doubly-linked list.
 type List[T any] struct {
-	first *element[T] // The first element in the list
-	last  *element[T] // The last element in the list
-	len   int         // The number of elements in the list
+	first *Node[T] // The first element in the list
+	last  *Node[T] // The last element in the list
+	len   int      // The number of elements in the list
 }
 
 // New returns a new [List].
@@ -31,52 +41,59 @@ func New[T any]() *List[T] {
 	return &List[T]{}
 }
 
-// Append adds an item to the end (tail) of the list. It may be retrieved
-// afterwards with l.Last().
-func (l *List[T]) Append(item T) {
+// Append adds an item to the end (tail) of the list, returning the list [Node] it was inserted into.
+// It may be retrieved afterwards with l.Last().
+func (l *List[T]) Append(item T) *Node[T] {
+	node := NewNode(item)
 	if l.last != nil {
 		// List has items in it, insert after last
-		l.insertAfter(l.last, &element[T]{item: item})
+		l.insertAfter(l.last, node)
 	} else {
 		// Empty list
 		l.Prepend(item)
 	}
+
+	return node
 }
 
-// Prepend adds an item to the front (head) of the list. It may be retrieved
-// afterwards with l.First().
-func (l *List[T]) Prepend(item T) {
-	elem := &element[T]{item: item}
+// Prepend adds an item to the front (head) of the list, returning the list [Node] it was inserted into.
+// It may be retrieved afterwards with l.First().
+func (l *List[T]) Prepend(item T) *Node[T] {
+	node := NewNode(item)
 
 	if l.first != nil {
 		// List has items in it, insert before first
-		l.insertBefore(l.first, elem)
+		l.insertBefore(l.first, node)
 	} else {
 		// Empty list
-		l.first = elem
-		l.last = elem
+		l.first = node
+		l.last = node
 		l.len++
 	}
+
+	return node
 }
 
-// First returns the item at the start (head) of the list, leaving
+// First returns a pointer to the node at the start (head) of the list, leaving
 // the list unmodified.
-func (l *List[T]) First() (item T, ok bool) {
-	var zero T
+//
+// If the list is empty an error is returned.
+func (l *List[T]) First() (*Node[T], error) {
 	if l.first == nil {
-		return zero, false
+		return nil, errors.New("First() called on empty list")
 	}
-	return l.first.item, true
+	return l.first, nil
 }
 
-// Last returns the item at the end (tail) of the list, leaving
+// Last returns a pointer to the node at the end (tail) of the list, leaving
 // the list unmodified.
-func (l *List[T]) Last() (item T, ok bool) {
-	var zero T
+//
+// If the list is empty an error is returned.
+func (l *List[T]) Last() (*Node[T], error) {
 	if l.last == nil {
-		return zero, false
+		return nil, errors.New("Last() called on empty list")
 	}
-	return l.last.item, true
+	return l.last, nil
 }
 
 // Len returns the number of elements in the list.
@@ -84,32 +101,31 @@ func (l *List[T]) Len() int {
 	return l.len
 }
 
-// Pop removes the last element of the list and returns it.
+// Pop removes the last node from the list and returns it.
 //
 // If the list is empty, Pop() returns an error.
-func (l *List[T]) Pop() (T, error) {
-	var zero T
-	last := l.last
-	if last == nil {
-		return zero, errors.New("pop from empty list")
+func (l *List[T]) Pop() (*Node[T], error) {
+	if l.last == nil {
+		return nil, errors.New("Pop() called on empty list")
 	}
-	l.remove(last)
 
-	return last.item, nil
+	return l.remove(l.last), nil
 }
 
-// PopFirst removes the first element of the list and returns it.
+// PopFirst removes the first node from the list and returns it.
 //
 // If the list is empty, PopFirst() returns an error.
-func (l *List[T]) PopFirst() (T, error) {
-	var zero T
-	first := l.first
-	if first == nil {
-		return zero, errors.New("pop from empty list")
+func (l *List[T]) PopFirst() (*Node[T], error) {
+	if l.first == nil {
+		return nil, errors.New("PopFirst() called on empty list")
 	}
-	l.remove(first)
 
-	return first.item, nil
+	return l.remove(l.first), nil
+}
+
+// Remove removes a [Node] from the list, returning it after removal.
+func (l *List[T]) Remove(node *Node[T]) *Node[T] {
+	return l.remove(node)
 }
 
 // Items returns an iterator over the items in the list, in order.
@@ -134,66 +150,65 @@ func (l *List[T]) Backwards() iter.Seq[T] {
 	}
 }
 
-// TODO(@FollowTheProcess): We need an Insert API but I don't really want to export element
-// needs some thinking
-
-// insertAfter inserts a new element after an existing one.
-func (l *List[T]) insertAfter(after *element[T], elem *element[T]) {
-	elem.prev = after
+// insertAfter inserts a new node after an existing one.
+func (l *List[T]) insertAfter(after *Node[T], node *Node[T]) {
+	node.prev = after
 
 	if after.next != nil {
 		// We're inserting in the middle of the list somewhere
-		elem.next = after.next
-		after.next.prev = elem
+		node.next = after.next
+		after.next.prev = node
 	} else {
 		// We're inserting at the end of the list
-		elem.next = nil
-		l.last = elem
+		node.next = nil
+		l.last = node
 	}
 
-	after.next = elem
+	after.next = node
 	l.len++
 }
 
 // insertBefore inserts a new element before an existing one.
-func (l *List[T]) insertBefore(before *element[T], elem *element[T]) {
-	elem.next = before
+func (l *List[T]) insertBefore(before *Node[T], node *Node[T]) {
+	node.next = before
 
 	if before.prev != nil {
 		// We're inserting in the middle of the list somewhere
-		elem.prev = before.prev
-		before.prev.next = elem
+		node.prev = before.prev
+		before.prev.next = node
 	} else {
 		// We're inserting at the start of the list
-		elem.prev = nil
-		l.first = elem
+		node.prev = nil
+		l.first = node
 	}
 
-	before.prev = elem
+	before.prev = node
 	l.len++
 }
 
-// remove removes an element from the list.
-func (l *List[T]) remove(elem *element[T]) {
-	if elem.prev != nil {
+// remove removes a node from the list, returning the one it just removed.
+func (l *List[T]) remove(node *Node[T]) *Node[T] {
+	if node.prev != nil {
 		// Removing from somewhere in the middle of the list
-		elem.prev.next = elem.next
+		node.prev.next = node.next
 	} else {
 		// Removing the first element
-		l.first = elem.next
+		l.first = node.next
 	}
 
-	if elem.next != nil {
+	if node.next != nil {
 		// Removing from somewhere in the middle of the list
-		elem.next.prev = elem.prev
+		node.next.prev = node.prev
 	} else {
 		// Removing the last element
-		l.last = elem.prev
+		l.last = node.prev
 	}
 
 	// Avoid memory leaks
-	elem.next = nil
-	elem.prev = nil
+	node.next = nil
+	node.prev = nil
 
 	l.len--
+
+	return node
 }
