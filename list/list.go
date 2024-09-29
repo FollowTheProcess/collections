@@ -108,9 +108,8 @@ func (l *List[T]) Pop() (*Node[T], error) {
 	if l.last == nil {
 		return nil, errors.New("Pop() called on empty list")
 	}
-	removed := l.remove(l.last)
 
-	return removed, nil
+	return l.remove(l.last), nil
 }
 
 // PopFirst removes the first node from the list and returns it.
@@ -120,9 +119,8 @@ func (l *List[T]) PopFirst() (*Node[T], error) {
 	if l.first == nil {
 		return nil, errors.New("PopFirst() called on empty list")
 	}
-	removed := l.remove(l.first)
 
-	return removed, nil
+	return l.remove(l.first), nil
 }
 
 // Remove removes a [Node] from the list, returning it after removal.
