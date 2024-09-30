@@ -1,6 +1,8 @@
 package orderedmap_test
 
 import (
+	"maps"
+	"slices"
 	"testing"
 
 	"github.com/FollowTheProcess/collections/orderedmap"
@@ -57,4 +59,106 @@ func TestRemove(t *testing.T) {
 	test.Equal(t, two, "two") // Wrong value returned from Remove
 
 	test.Equal(t, m.Size(), 2) // Wrong size after removal
+}
+
+func TestOldest(t *testing.T) {
+	m := orderedmap.New[int, string]()
+
+	oldestKey, oldestValue, ok := m.Oldest()
+	test.False(t, ok)
+	test.Equal(t, oldestValue, "")
+	test.Equal(t, oldestKey, 0)
+
+	// Insert a bunch of stuff
+	m.Insert(1, "one")
+	m.Insert(2, "two")
+	m.Insert(3, "three")
+	m.Insert(4, "four")
+
+	oldestKey, oldestValue, ok = m.Oldest()
+	test.True(t, ok)
+	test.Equal(t, oldestKey, 1)       // Wrong oldest key
+	test.Equal(t, oldestValue, "one") // Wrong oldest value
+}
+
+func TestNewest(t *testing.T) {
+	m := orderedmap.New[int, string]()
+
+	newestKey, newestValue, ok := m.Newest()
+	test.False(t, ok)
+	test.Equal(t, newestValue, "")
+	test.Equal(t, newestKey, 0)
+
+	// Insert a bunch of stuff
+	m.Insert(1, "one")
+	m.Insert(2, "two")
+	m.Insert(3, "three")
+	m.Insert(4, "four")
+
+	newestKey, newestValue, ok = m.Newest()
+	test.True(t, ok)
+	test.Equal(t, newestKey, 4)        // Wrong newest key
+	test.Equal(t, newestValue, "four") // Wrong newest value
+}
+
+func TestGetOrInsert(t *testing.T) {
+	m := orderedmap.New[string, int]()
+
+	one, existed := m.GetOrInsert("one", 1)
+	test.False(t, existed) // should not have existed
+	test.Equal(t, one, 1)  // wrong value
+
+	// Try again with same value
+	one, existed = m.GetOrInsert("one", 1)
+	test.True(t, existed) // should have existed this time
+	test.Equal(t, one, 1)
+
+	// And again with different value
+	one, existed = m.GetOrInsert("one", 100)
+	test.True(t, existed) // should also exist
+	test.Equal(t, one, 1) // wrong value
+}
+
+func TestItems(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("one", 1)
+	m.Insert("two", 2)
+	m.Insert("three", 3)
+	m.Insert("four", 4)
+
+	items := maps.Collect(m.Items())
+	want := map[string]int{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+		"four":  4,
+	}
+
+	test.EqualFunc(t, items, want, maps.Equal)
+}
+
+func TestKeys(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("one", 1)
+	m.Insert("two", 2)
+	m.Insert("three", 3)
+	m.Insert("four", 4)
+
+	keys := slices.Collect(m.Keys())
+	want := []string{"one", "two", "three", "four"}
+
+	test.EqualFunc(t, keys, want, slices.Equal)
+}
+
+func TestValues(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("one", 1)
+	m.Insert("two", 2)
+	m.Insert("three", 3)
+	m.Insert("four", 4)
+
+	values := slices.Collect(m.Values())
+	want := []int{1, 2, 3, 4}
+
+	test.EqualFunc(t, values, want, slices.Equal)
 }

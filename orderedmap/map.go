@@ -2,7 +2,11 @@
 // key, value pairs were inserted.
 package orderedmap
 
-import "github.com/FollowTheProcess/collections/list"
+import (
+	"iter"
+
+	"github.com/FollowTheProcess/collections/list"
+)
 
 // entry is a single key, value pair entry in the map.
 type entry[K comparable, V any] struct {
@@ -91,6 +95,88 @@ func (m *Map[K, V]) Size() int {
 	return m.list.Len()
 }
 
-// TODO(@FollowTheProcess): Oldest and Newest functions to return the oldest and newest item in the map
-// TODO(@FollowTheProcess): Implement iterators to go from oldest to newest and in reverse
-// TODO(@FollowTheProcess): Do I want an Upsert API? GetOrInsert?
+// Oldest returns the oldest key, value pair in the map, i.e. the pair
+// that was inserted first. Note that in place modifications do not update the order.
+func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
+	var zeroKey K
+	var zeroVal V
+	node, err := m.list.First()
+	if err != nil {
+		// Empty list
+		return zeroKey, zeroVal, false
+	}
+
+	return node.Item().key, node.Item().value, true
+}
+
+// Newest returns the newest key, value pair in the map, i.e. the pair that
+// was inserted last. Not that in place modifications do not update the order.
+func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
+	var zeroKey K
+	var zeroVal V
+	node, err := m.list.Last()
+	if err != nil {
+		// Empty list
+		return zeroKey, zeroVal, false
+	}
+
+	return node.Item().key, node.Item().value, true
+}
+
+// GetOrInsert fetches a value by it's key if it is present in the map, and if not
+// inserts the passed in value against that key instead.
+//
+// The returned boolean reports whether the key already existed.
+func (m *Map[K, V]) GetOrInsert(key K, value V) (val V, existed bool) {
+	if entry, exists := m.inner[key]; exists {
+		// Already in the map, return the value
+		return entry.value, true
+	}
+
+	// The item didn't exist, this is a brand new insertion
+	e := &entry[K, V]{
+		key:   key,
+		value: value,
+	}
+
+	e.node = m.list.Append(e)
+	m.inner[key] = e
+
+	return value, false
+}
+
+// Items returns an iterator over the entries in the map
+// in the order in which they were inserted.
+func (m *Map[K, V]) Items() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for item := range m.list.Items() {
+			if !yield(item.key, item.value) {
+				return
+			}
+		}
+	}
+}
+
+// Keys returns an iterator over the keys in the map
+// in the order in which they were inserted.
+func (m *Map[K, V]) Keys() iter.Seq[K] {
+	return func(yield func(K) bool) {
+		for item := range m.list.Items() {
+			if !yield(item.key) {
+				return
+			}
+		}
+	}
+}
+
+// Values returns an iterator over the values in the map
+// in the order in which they were inserted.
+func (m *Map[K, V]) Values() iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for item := range m.list.Items() {
+			if !yield(item.value) {
+				return
+			}
+		}
+	}
+}
