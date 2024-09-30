@@ -16,9 +16,11 @@ Collection of generic data structures in Go 📦
 
 Small, useful, zero dependency implementations of generic collection data structures in Go:
 
-* Sets
-* Stacks
-* Queues
+* **Set:** Offers fast membership checking as well as difference, intersection etc.
+* **Stack:** Simple LIFO stack
+* **Queue:** Simple FIFO queue
+* **List:** A doubly-linked list
+* **OrderedMap:** A map that remembers the order in which keys were inserted
 
 ## Installation
 
@@ -131,4 +133,46 @@ fmt.Println(item) // "go"
 // Popping from an empty queue returns an error
 _, err := q.Pop()
 fmt.Println(err) // "pop from empty queue"
+```
+
+### List
+
+A doubly linked list is a data structure where nodes wrap the data and point to their next and previous nodes. It offers cheap insertion and removal.
+
+```go
+// Initialise a new list holding a string as the data
+l := list.New[string]()
+
+// Bolt things on the end
+l.Append("one")
+l.Append("two")
+
+// Push things at the start
+l.Prepend("before")
+
+last, err := l.Last()
+// Handle err.. means empty list
+fmt.Println(last.Item()) // <- Last is a Node, so you must call .Item() to get underlying data
+```
+
+### Ordered Map
+
+An ordered map is like the Go standard map, except it remembers the order in which items were inserted.
+
+```go
+m := orderedmap.New[int, string]()
+
+// Insert key value pairs
+m.Insert(1, "one")
+m.Insert(2, "two")
+m.Insert(3, "three")
+
+one, ok := m.Get(1) // Fetch them back out, same API as go map
+if !ok {
+    fmt.Println("1 was missing!")
+}
+
+two, existed := m.Remove(2) // Removal returns what was in the map
+
+oldestKey, oldestVal, ok := m.Oldest() // Get the first inserted thing (there's also a Newest())
 ```
