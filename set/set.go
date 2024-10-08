@@ -21,7 +21,8 @@ type Set[T comparable] struct {
 // size is allocated.
 //
 // If constructing a set from a pre-existing slice of items, use [From]
-// which will preallocate the set with the appropriate size.
+// which will preallocate the set with the appropriate size. Or to collect
+// an iterator into a [Set], use [Collect].
 func New[T comparable]() *Set[T] {
 	return &Set[T]{
 		container: make(map[T]struct{}),
@@ -32,12 +33,24 @@ func New[T comparable]() *Set[T] {
 //
 // The set will be preallocated the size of len(items).
 func From[T comparable](items []T) *Set[T] {
-	set := &Set[T]{
-		container: make(map[T]struct{}, len(items)),
-	}
+	set := &Set[T]{container: make(map[T]struct{}, len(items))}
 	for _, item := range items {
-		set.Insert(item)
+		// Note: intentionally not using Insert here as we don't need
+		// the checks it provides
+		set.container[item] = struct{}{}
 	}
+	return set
+}
+
+// Collect builds a [Set] from an iterator of items.
+func Collect[T comparable](items iter.Seq[T]) *Set[T] {
+	set := New[T]()
+	for item := range items {
+		// Note: intentionally not using Insert here as we don't need
+		// the checks it provides
+		set.container[item] = struct{}{}
+	}
+
 	return set
 }
 
