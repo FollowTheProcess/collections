@@ -22,6 +22,30 @@ func New[T any]() *Stack[T] {
 	return &Stack[T]{}
 }
 
+// From builds a [Stack] from an existing slice of items, pushing items
+// into the stack in the order of the slice.
+//
+// The stack will be preallocated the size of len(items).
+func From[T any](items []T) *Stack[T] {
+	stack := &Stack[T]{container: make([]T, 0, len(items))}
+	for _, item := range items {
+		stack.Push(item)
+	}
+
+	return stack
+}
+
+// Collect builds a [Stack] from an iterator of items, pushing items
+// into the stack in the order of iteration.
+func Collect[T any](items iter.Seq[T]) *Stack[T] {
+	stack := New[T]()
+	for item := range items {
+		stack.Push(item)
+	}
+
+	return stack
+}
+
 // Push adds an item to the top of stack.
 //
 //	s := stack.New[string]()
