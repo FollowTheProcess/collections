@@ -110,6 +110,16 @@ func TestItems(t *testing.T) {
 	test.EqualFunc(t, got, items, slices.Equal)
 }
 
+func TestCollect(t *testing.T) {
+	items := []string{"cheese", "apples", "oranges", "milk"}
+	slices.Sort(items)
+
+	set := set.Collect(slices.Values(items))
+
+	got := slices.Sorted(set.Items())
+	test.EqualFunc(t, got, items, slices.Equal)
+}
+
 func TestUnion(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
