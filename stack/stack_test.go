@@ -97,6 +97,38 @@ func TestString(t *testing.T) {
 	test.Equal(t, s.String(), want)
 }
 
+func TestFrom(t *testing.T) {
+	items := []string{"cheese", "apples", "wine", "beer"}
+
+	s := stack.From(items)
+
+	test.Equal(t, s.Size(), 4)
+
+	first, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "beer")
+
+	second, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "wine")
+}
+
+func TestCollect(t *testing.T) {
+	items := []string{"cheese", "apples", "wine", "beer"}
+
+	s := stack.Collect(slices.Values(items))
+
+	test.Equal(t, s.Size(), 4)
+
+	first, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "beer")
+
+	second, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "wine")
+}
+
 func BenchmarkStack(b *testing.B) {
 	s := stack.New[int]()
 
