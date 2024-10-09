@@ -99,22 +99,34 @@ func TestString(t *testing.T) {
 
 func TestFrom(t *testing.T) {
 	items := []string{"cheese", "apples", "wine", "beer"}
-	slices.Sort(items)
 
 	s := stack.From(items)
-	got := slices.Sorted(s.Items())
 
-	test.EqualFunc(t, got, items, slices.Equal)
+	test.Equal(t, s.Size(), 4)
+
+	first, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "beer")
+
+	second, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "wine")
 }
 
 func TestCollect(t *testing.T) {
 	items := []string{"cheese", "apples", "wine", "beer"}
-	slices.Sort(items)
 
 	s := stack.Collect(slices.Values(items))
-	got := slices.Sorted(s.Items())
 
-	test.EqualFunc(t, got, items, slices.Equal)
+	test.Equal(t, s.Size(), 4)
+
+	first, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "beer")
+
+	second, err := s.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "wine")
 }
 
 func BenchmarkStack(b *testing.B) {
