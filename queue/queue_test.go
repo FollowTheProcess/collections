@@ -83,6 +83,38 @@ func TestString(t *testing.T) {
 	test.Equal(t, q.String(), want)
 }
 
+func TestFrom(t *testing.T) {
+	items := []string{"cheese", "apples", "wine", "beer"}
+
+	q := queue.From(items)
+
+	test.Equal(t, q.Size(), 4)
+
+	first, err := q.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "cheese")
+
+	second, err := q.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "apples")
+}
+
+func TestCollect(t *testing.T) {
+	items := []string{"cheese", "apples", "wine", "beer"}
+
+	q := queue.Collect(slices.Values(items))
+
+	test.Equal(t, q.Size(), 4)
+
+	first, err := q.Pop()
+	test.Ok(t, err)
+	test.Equal(t, first, "cheese")
+
+	second, err := q.Pop()
+	test.Ok(t, err)
+	test.Equal(t, second, "apples")
+}
+
 func TestNotNew(t *testing.T) {
 	q := queue.Queue[int]{}
 	q.Push(1)
