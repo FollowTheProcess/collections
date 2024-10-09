@@ -22,6 +22,30 @@ func New[T any]() *Queue[T] {
 	return &Queue[T]{}
 }
 
+// From builds a [Queue] from an existing slice of items, pushing items
+// into the queue in the order of the slice.
+//
+// The queue will be preallocated the size of len(items).
+func From[T any](items []T) *Queue[T] {
+	queue := &Queue[T]{container: make([]T, 0, len(items))}
+	for _, item := range items {
+		queue.Push(item)
+	}
+
+	return queue
+}
+
+// Collect builds a [Queue] from an iterator of items, pushing items
+// into the queue in the order of iteration.
+func Collect[T any](items iter.Seq[T]) *Queue[T] {
+	queue := New[T]()
+	for item := range items {
+		queue.Push(item)
+	}
+
+	return queue
+}
+
 // Push adds an item to the back of the queue.
 //
 //	q := queue.New[string]()
