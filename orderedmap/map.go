@@ -44,6 +44,14 @@ func (m *Map[K, V]) Get(key K) (value V, ok bool) {
 	return val.value, true
 }
 
+// Contains reports whether the map contains the given key.
+func (m *Map[K, V]) Contains(key K) bool {
+	if _, exists := m.inner[key]; exists {
+		return true
+	}
+	return false
+}
+
 // Insert inserts a new value into the map against the given key, returning the previous
 // value and a boolean to indicate presence.
 //

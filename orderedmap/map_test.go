@@ -119,6 +119,16 @@ func TestGetOrInsert(t *testing.T) {
 	test.Equal(t, one, 1) // wrong value
 }
 
+func TestContains(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("one", 1)
+	m.Insert("two", 2)
+	m.Insert("three", 3)
+
+	test.True(t, m.Contains("one"))   // Map should contain "one"
+	test.False(t, m.Contains("four")) // "four" is not in the map
+}
+
 func TestItems(t *testing.T) {
 	m := orderedmap.New[string, int]()
 	m.Insert("one", 1)
