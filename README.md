@@ -21,6 +21,7 @@ Small, useful, zero dependency implementations of generic collection data struct
 * **Queue:** Simple FIFO queue
 * **List:** A doubly-linked list
 * **OrderedMap:** A map that remembers the order in which keys were inserted
+* **dag:** A generic directed acyclic graph
 
 ## Installation
 
@@ -176,3 +177,24 @@ two, existed := m.Remove(2) // Removal returns what was in the map
 
 oldestKey, oldestVal, ok := m.Oldest() // Get the first inserted thing (there's also a Newest())
 ```
+
+### DAG
+
+A DAG ([Directed Acyclic Graph]) is an ordered graph ideal for task orchestration and dependency management.
+
+```go
+// Create a new DAG storing integers as the vertex data type, and a unique ID
+// for each vertex of a string (this must uniquely identify a single vertex in the graph)
+graph := dag.New[string, int]()
+
+_ = graph.AddVertex("one", 1) // Add a vertex named "one" storing the integer 1
+_ = graph.AddVertex("two", 2) // Add a vertex named "two" storing the integer 2
+
+// Connect the two vertices, "two" depends on "one"
+_ = graph.AddEdge("one", "two")
+
+// Topologically sort the graph
+order, err := graph.Sort()
+```
+
+[Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph

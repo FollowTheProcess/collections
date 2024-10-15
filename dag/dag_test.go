@@ -15,10 +15,11 @@ func TestAddVertex(t *testing.T) {
 		test.Equal(t, graph.Size(), 0)  // Starting size must be 0
 
 		err := graph.AddVertex("v1", "hello")
-
 		test.Ok(t, err)
-		test.Equal(t, graph.Order(), 1) // Must now have 1 vertex
-		test.Equal(t, graph.Size(), 0)  // Size must still be 0 -> no edges yet
+
+		test.Equal(t, graph.Order(), 1)          // Must now have 1 vertex
+		test.Equal(t, graph.Size(), 0)           // Size must still be 0 -> no edges yet
+		test.True(t, graph.ContainsVertex("v1")) // Must contain v1
 	})
 
 	t.Run("already exists", func(t *testing.T) {
@@ -31,6 +32,30 @@ func TestAddVertex(t *testing.T) {
 		err = graph.AddVertex("v1", "world") // Same id
 		test.Err(t, err)
 		test.Equal(t, err.Error(), "vertex with id 'v1' already exists")
+	})
+}
+
+func TestGetVertex(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		graph := dag.New[string, string]()
+
+		err := graph.AddVertex("v1", "hello")
+		test.Ok(t, err)
+
+		v1, err := graph.GetVertex("v1")
+		test.Ok(t, err)
+		test.Equal(t, v1, "hello")
+	})
+
+	t.Run("missing", func(t *testing.T) {
+		graph := dag.New[string, string]()
+
+		err := graph.AddVertex("v1", "hello")
+		test.Ok(t, err)
+
+		_, err = graph.GetVertex("missing")
+		test.Err(t, err)
+		test.Equal(t, err.Error(), "vertex with id 'missing' not in graph")
 	})
 }
 
