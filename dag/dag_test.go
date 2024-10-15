@@ -181,3 +181,40 @@ func isInPossibleSolutions[T comparable](result []T, possibles [][]T) bool {
 
 	return false
 }
+
+// makeGraph makes a simple DAG with a few connections for things like benchmarks.
+func makeGraph(tb testing.TB) *dag.Graph[string, int] {
+	tb.Helper()
+	graph := dag.New[string, int]()
+
+	test.Ok(tb, graph.AddVertex("one", 1))
+	test.Ok(tb, graph.AddVertex("two", 2))
+	test.Ok(tb, graph.AddVertex("three", 3))
+	test.Ok(tb, graph.AddVertex("four", 4))
+	test.Ok(tb, graph.AddVertex("five", 5))
+
+	// two depends on one
+	err := graph.AddEdge("one", "two")
+	test.Ok(tb, err) // AddEdge returned an error ("one", "two")
+
+	// four depends on three
+	err = graph.AddEdge("three", "four")
+	test.Ok(tb, err) // AddEdge returned an error ("three", "four")
+
+	return graph
+}
+
+func BenchmarkGraphSort(b *testing.B) {
+	// Because the graph.Sort method alters the state of the graph (removing edges)
+	// a new graph must be constructed for each run meaning this is actually quite slow to run (~1 minute)
+	// but we stop and start the timer at the right places to ensure just the sorting code's performance is measured
+	for n := 0; n < b.N; n++ {
+		b.StopTimer()
+		graph := makeGraph(b)
+		b.StartTimer()
+		_, err := graph.Sort()
+		if err != nil {
+			b.Fatalf("graph.Sort returned an error: %v", err)
+		}
+	}
+}
