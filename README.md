@@ -21,7 +21,8 @@ Small, useful, zero dependency implementations of generic collection data struct
 * **Queue:** Simple FIFO queue
 * **List:** A doubly-linked list
 * **OrderedMap:** A map that remembers the order in which keys were inserted
-* **dag:** A generic directed acyclic graph
+* **DAG:** A generic directed acyclic graph
+* **Counter:** A convenient construct for counting occurrences of things (similar to Python's [collections.Counter])
 
 ## Installation
 
@@ -197,4 +198,30 @@ _ = graph.AddEdge("one", "two")
 order, err := graph.Sort()
 ```
 
+### Counter
+
+A convenient construct to count occurrences of comparable items.
+
+```go
+counts := counter.New[string]()
+
+// Count fruits
+counts.Add("apple")
+counts.Add("apple")
+counts.Add("apple")
+counts.Add("orange")
+counts.Add("orange")
+counts.Add("raspberry")
+
+// How many apples?
+counts.Count("apple") // 3
+
+// How many fruits in total?
+counts.Sum() // 6
+
+// What's the most common fruit
+counts.MostCommon(1) // [{Item: "apple", Count: 3}]
+```
+
 [Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph
+[collections.Counter]: https://docs.python.org/3/library/collections.html#collections.Counter
