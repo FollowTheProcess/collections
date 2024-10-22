@@ -66,18 +66,44 @@ func (c *Counter[T]) Size() int {
 	return len(c.counts)
 }
 
-// Add adds an item to the counter, incrementing it's count.
-func (c *Counter[T]) Add(item T) {
+// Add adds an item to the counter, incrementing it's count and returning the new count.
+//
+// If the item doesn't exist, it is added to the counter with the count of 1, and 1 will be returned.
+func (c *Counter[T]) Add(item T) int {
 	v, exists := c.counts[item]
 	if !exists {
 		// Not previously seen -> item: 1
 		c.counts[item] = 1
-		return
+		return 1
 	}
 
 	// Already existed, increment it's count
 	v += 1
 	c.counts[item] = v
+	return v
+}
+
+// Sub subtracts an item from the counter, decrementing it's count and returning the new count.
+//
+// If the decrement would set the item's count to 0, it is then removed
+// entirely and 0 is returned.
+//
+// If the item doesn't exist, this is a no-op returning 0.
+func (c *Counter[T]) Sub(item T) int {
+	if v, exists := c.counts[item]; exists {
+		v -= 1
+		if v == 0 {
+			// If it's now 0, remove it entirely
+			delete(c.counts, item)
+			return 0
+		}
+
+		// Otherwise, store the new value back
+		c.counts[item] = v
+		return v
+	}
+
+	return 0
 }
 
 // Remove completely removes an item from the counter, returning it's count if
