@@ -9,6 +9,19 @@
 
 Collection of generic data structures in Go 📦
 
+- [Collections](#collections)
+  - [Project Description](#project-description)
+  - [Installation](#installation)
+  - [Quickstart](#quickstart)
+    - [Set](#set)
+    - [Stack](#stack)
+    - [Queue](#queue)
+    - [List](#list)
+    - [Ordered Map](#ordered-map)
+    - [DAG](#dag)
+    - [Counter](#counter)
+    - [Chain](#chain)
+
 > [!TIP]
 > Most collections support the Go 1.23 functional iterator pattern
 
@@ -16,14 +29,14 @@ Collection of generic data structures in Go 📦
 
 Small, useful, zero dependency implementations of generic collection data structures in Go:
 
-* **Set:** Offers fast membership checking as well as difference, intersection etc.
-* **Stack:** Simple LIFO stack
-* **Queue:** Simple FIFO queue
-* **List:** A doubly-linked list
-* **OrderedMap:** A map that remembers the order in which keys were inserted
-* **DAG:** A generic directed acyclic graph
-* **Counter:** A convenient construct for counting occurrences of things (similar to Python's [collections.Counter])
-* **Chain:** A chain of maps, lookups first look in one map, then the next, then the next, returning the first result found (similar to Python's [collections.ChainMap])
+- **Set:** Offers fast membership checking as well as difference, intersection etc.
+- **Stack:** Simple LIFO stack
+- **Queue:** Simple FIFO queue
+- **List:** A doubly-linked list
+- **OrderedMap:** A map that remembers the order in which keys were inserted
+- **DAG:** A generic directed acyclic graph
+- **Counter:** A convenient construct for counting occurrences of things (similar to Python's [collections.Counter])
+- **Chain:** A chain of maps, lookups first look in one map, then the next, then the next, returning the first result found (similar to Python's [collections.ChainMap])
 
 ## Installation
 
