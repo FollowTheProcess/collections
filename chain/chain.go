@@ -103,3 +103,23 @@ func (c *Chain[K, V]) Insert(key K, value V) (val V, existed bool) {
 	c.maps[0][key] = value
 	return value, false
 }
+
+// Remove removes a key from the [Chain], returning the stored value and
+// a boolean to indicate whether it was in the map to begin with.
+//
+// If the value was in the chain, the removed value and true are returned, if not
+// the zero value for the value type and false are returned.
+//
+// The value removed will be the first one encountered.
+func (c *Chain[K, V]) Remove(key K) (value V, existed bool) {
+	for _, m := range c.maps {
+		if val, exists := m[key]; exists {
+			delete(m, key)
+			return val, true
+		}
+	}
+
+	// Didn't exist
+	var zero V
+	return zero, false
+}

@@ -213,3 +213,45 @@ func TestEmptyMaps(t *testing.T) {
 	test.False(t, existed)
 	test.Equal(t, got, 1)
 }
+
+func TestRemove(t *testing.T) {
+	maps := []map[int]string{
+		{
+			1: "one in first map",
+			2: "two in first map",
+		},
+		{
+			1: "one in second map",
+			2: "two in second map",
+			3: "three in second map",
+		},
+		{
+			1: "one in third map",
+			2: "two in third map",
+			3: "three in third map",
+			4: "four in third map",
+		},
+	}
+
+	chain := chain.From(maps)
+
+	got, existed := chain.Remove(1)
+	test.True(t, existed)
+	test.Equal(t, got, "one in first map") // Remove should remove 1 from the first map
+
+	got, existed = chain.Remove(1)
+	test.True(t, existed)
+	test.Equal(t, got, "one in second map") // Now the second map
+
+	got, existed = chain.Remove(1)
+	test.True(t, existed)
+	test.Equal(t, got, "one in third map") // Now the third map
+
+	got, existed = chain.Remove(1)
+	test.False(t, existed)
+	test.Equal(t, got, "") // No more 1's left
+
+	got, existed = chain.Get(1)
+	test.False(t, existed)
+	test.Equal(t, got, "")
+}
