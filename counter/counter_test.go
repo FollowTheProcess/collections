@@ -13,14 +13,17 @@ func TestNewCounter(t *testing.T) {
 
 	test.Equal(t, c.Size(), 0) // Initial size must be empty
 
-	c.Add("apple")
-	c.Add("apple")
+	test.Equal(t, c.Add("apple"), 1) // First add returns 1
+	test.Equal(t, c.Add("apple"), 2) // Second add returns 2
 
 	test.Equal(t, c.Size(), 1) // "apple" should be the only item
 
-	c.Add("orange")
+	test.Equal(t, c.Add("orange"), 1) // First add returns 1 (orange)
 
 	test.Equal(t, c.Size(), 2) // should now have 2 items
+
+	test.Equal(t, c.Sub("orange"), 0) // Sub("orange") should remove orange completely
+	test.Equal(t, c.Sub("apple"), 1)  // Sub("apple") should decrement apple to 1
 }
 
 func TestCount(t *testing.T) {
