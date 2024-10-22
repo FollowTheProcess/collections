@@ -23,6 +23,7 @@ Small, useful, zero dependency implementations of generic collection data struct
 * **OrderedMap:** A map that remembers the order in which keys were inserted
 * **DAG:** A generic directed acyclic graph
 * **Counter:** A convenient construct for counting occurrences of things (similar to Python's [collections.Counter])
+* **Chain:** A chain of maps, lookups first look in one map, then the next, then the next, returning the first result found (similar to Python's [collections.ChainMap])
 
 ## Installation
 
@@ -223,5 +224,44 @@ counts.Sum() // 6
 counts.MostCommon(1) // [{Item: "apple", Count: 3}]
 ```
 
+### Chain
+
+A chain of maps who's values are looked up in order. If the value isn't in the first map, it falls through to the second etc. Fresh inserts always go to the first map, updates update the value in whichever map it's first found in.
+
+> [!TIP]
+> A `Chain` is very useful for structured lookups of different priorities e.g. taking configuration from command line args which have precedence over env vars, and then falling back to default values
+
+```go
+maps := []map[int]string{
+    {
+        1: "one in first map",
+        2: "two in first map",
+    },
+    {
+        1: "one in second map",
+        2: "two in second map",
+        3: "three in second map",
+    },
+    {
+        1: "one in third map",
+        2: "two in third map",
+        3: "three in third map",
+        4: "four in third map",
+    },
+    }
+
+    chain := chain.From(maps)
+
+    // 1 is in the first map in the chain
+    chain.Get(1) // -> "one in first map", true 
+
+    // To get 4, we look through every map until it's found
+    chain.Get(4) // -> "four in third map", true
+
+    // 5 isn't in any map
+    chain.Get(5) // -> "", false
+```
+
 [Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph
 [collections.Counter]: https://docs.python.org/3/library/collections.html#collections.Counter
+[collections.ChainMap]: https://docs.python.org/3/library/collections.html#collections.ChainMap
