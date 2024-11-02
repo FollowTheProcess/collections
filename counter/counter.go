@@ -7,16 +7,15 @@
 package counter
 
 import (
-	"container/heap"
 	"iter"
+
+	"github.com/FollowTheProcess/collections/priority"
 )
 
 // Pair holds a countable item along with its count.
 type Pair[T comparable] struct {
 	Item  T   // The actual item
 	Count int // The number of times it was counted
-
-	index int // Needed for container/heap
 }
 
 // Counter is a convenient construct for counting comparable values.
@@ -146,69 +145,18 @@ func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }
 
-// TODO(@FollowTheProcess): Replace container/heap with my own generic priority queue
-
-// priorityQueue is a priorityQueue of Pairs, needed for MostCommon, it implements
-// [container/heap.Interface].
-type priorityQueue[T comparable] []*Pair[T]
-
-// Len returns the number of items in the queue.
-func (p priorityQueue[T]) Len() int {
-	return len(p)
-}
-
-// Less returns whether queue[i] is considered less than queue[j].
-func (p priorityQueue[T]) Less(i, j int) bool {
-	// Max heap so we want greater than
-	return p[i].Count > p[j].Count
-}
-
-// Swap swaps two elements in the queue.
-func (p priorityQueue[T]) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
-	p[i].index = i
-	p[j].index = j
-}
-
-// Push pushes an item into the queue.
-func (p *priorityQueue[T]) Push(x any) {
-	n := len(*p)
-	item, _ := x.(*Pair[T]) //nolint: errcheck // We know this can only be a Pair[T]
-	item.index = n
-	*p = append(*p, item)
-}
-
-// Pop pops an item off the priority queue in order.
-func (p *priorityQueue[T]) Pop() any {
-	old := *p
-	n := len(old)
-	item := old[n-1]
-	old[n-1] = nil  // don't stop the GC from reclaiming the item eventually
-	item.index = -1 // for safety
-	*p = old[0 : n-1]
-	return item
-}
-
 // MostCommon returns the n most common items in descending order.
 func (c *Counter[T]) MostCommon(n int) []Pair[T] {
-	queue := make(priorityQueue[T], len(c.counts))
-	i := 0
+	queue := priority.New[T]()
 	for item, count := range c.counts {
-		queue[i] = &Pair[T]{
-			Item:  item,
-			Count: count,
-			index: i,
-		}
-		i++
+		queue.Push(item, count)
 	}
-
-	heap.Init(&queue)
 
 	results := make([]Pair[T], 0, n)
 	// Pop off the queue in priority (count) order
 	for range n {
-		item, _ := heap.Pop(&queue).(*Pair[T]) //nolint: errcheck // We know this can only be a Pair[T]
-		results = append(results, *item)
+		item, _ := queue.Pop() //nolint: errcheck // Only error is pop from empty queue which we know we won't hit
+		results = append(results, Pair[T]{Item: item, Count: c.counts[item]})
 	}
 
 	return results
