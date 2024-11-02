@@ -21,6 +21,7 @@ Collection of generic data structures in Go 📦
     - [DAG](#dag)
     - [Counter](#counter)
     - [Chain](#chain)
+    - [Priority Queue](#priority-queue)
 
 > [!TIP]
 > Most collections support the Go 1.23 functional iterator pattern
@@ -37,6 +38,7 @@ Small, useful, zero dependency implementations of generic collection data struct
 - **DAG:** A generic directed acyclic graph
 - **Counter:** A convenient construct for counting occurrences of things (similar to Python's [collections.Counter])
 - **Chain:** A chain of maps, lookups first look in one map, then the next, then the next, returning the first result found (similar to Python's [collections.ChainMap])
+- **Priority Queue** A queue where items are popped according to order of priority
 
 ## Installation
 
@@ -273,6 +275,27 @@ maps := []map[int]string{
 
     // 5 isn't in any map
     chain.Get(5) // -> "", false
+```
+
+### Priority Queue
+
+```go
+queue := priority.New[string]()
+
+// Add strings and their priorities (note out of order)
+// highest priority wins
+q.Push("two", 2)
+q.Push("one", 1)
+q.Push("three", 3)
+q.Push("four", 4)
+
+item, err := q.Pop() // -> "four", nil
+item, err := q.Pop() // -> "three", nil
+item, err := q.Pop() // -> "two", nil
+item, err := q.Pop() // -> "one", nil
+
+// Pop from empty queue
+item, err := q.Pop() // -> "", errors.New("pop from empty queue")
 ```
 
 [Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph
