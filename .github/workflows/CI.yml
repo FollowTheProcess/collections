@@ -40,7 +40,7 @@ jobs:
 
       - name: Run Tests
         shell: bash # We get nice things like pipefail if this is set
-        run: go test -race -json -cover -covermode=atomic ./... | tparse -format markdown -all >> $GITHUB_STEP_SUMMARY
+        run: go test -race -json -cover -covermode=atomic ./... | tparse -format markdown >> $GITHUB_STEP_SUMMARY
 
   cov:
     name: CodeCov
