@@ -192,6 +192,29 @@ func TestAll(t *testing.T) {
 	test.EqualFunc(t, all, want, maps.Equal)
 }
 
+func TestItems(t *testing.T) {
+	c := counter.New[string]()
+	c.Add("one")
+	c.Add("two")
+	c.Add("two")
+	c.Add("three")
+	c.Add("three")
+	c.Add("three")
+	c.Add("four")
+	c.Add("four")
+	c.Add("four")
+	c.Add("four")
+
+	items := slices.Collect(c.Items())
+
+	want := []string{"one", "two", "three", "four"}
+
+	slices.Sort(items)
+	slices.Sort(want)
+
+	test.EqualFunc(t, items, want, slices.Equal)
+}
+
 func pairEqual[T comparable](a, b []counter.Pair[T]) bool {
 	if len(a) != len(b) {
 		return false
