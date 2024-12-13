@@ -139,6 +139,29 @@ func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }
 
+// MostCommon returns the item with the highest count, along with the count itself.
+//
+// If the Counter is empty it returns the zero value for the item type and 0 for the count.
+func (c *Counter[T]) MostCommon() (item T, count int) {
+	if len(c.counts) == 0 {
+		var zero T
+		return zero, 0
+	}
+
+	// Faster to just loop over the underlying map that construct the priority queue
+	// just to get the value with the highest count
+	var mostCommon T
+	highestCount := 0
+	for item, count := range c.counts {
+		if count > highestCount {
+			mostCommon = item
+			highestCount = count
+		}
+	}
+
+	return mostCommon, highestCount
+}
+
 // Descending returns an iterator of the item, count pairs in the Counter, yielding them
 // in descending order (i.e. highest count first).
 func (c *Counter[T]) Descending() iter.Seq2[T, int] {
