@@ -170,7 +170,7 @@ func (c *Counter[T]) MostCommon(n int) []Pair[T] {
 
 // TODO(@FollowTheProcess): Rename All to Counts
 
-// All returns an iterator over the items in the Counter, yielding them
+// All returns an iterator over the item, count pairs in the Counter, yielding them
 // in a non-deterministic order.
 func (c *Counter[T]) All() iter.Seq2[T, int] {
 	return func(yield func(T, int) bool) {
@@ -182,4 +182,14 @@ func (c *Counter[T]) All() iter.Seq2[T, int] {
 	}
 }
 
-// TODO(@FollowTheProcess): Add an Items() method that yields the keys of the internal map
+// Items returns an iterator over the items in the Counter, yielding them
+// in a non-deterministic order.
+func (c *Counter[T]) Items() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for item := range c.counts {
+			if !yield(item) {
+				return
+			}
+		}
+	}
+}
