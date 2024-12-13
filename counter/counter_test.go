@@ -139,12 +139,15 @@ func TestReset(t *testing.T) {
 	test.Equal(t, c.Sum(), 0)  // Wrong sum after Reset
 }
 
-func TestMostCommon(t *testing.T) {
+func TestDescending(t *testing.T) {
 	names := []string{
 		"dave",
 		"dave",
 		"dave",
+		"dave",
 		"chris",
+		"chris",
+		"john",
 		"john",
 		"john",
 		"john",
@@ -152,19 +155,24 @@ func TestMostCommon(t *testing.T) {
 		"mark",
 		"alice",
 		"alice",
+		"alice",
 	}
 
 	c := counter.From(names)
 
-	got := c.MostCommon(3)
+	var items []string
+	var counts []int
 
-	want := []counter.Count[string]{
-		{Item: "john", Value: 4},
-		{Item: "dave", Value: 3},
-		{Item: "alice", Value: 2},
+	for item, count := range c.Descending() {
+		items = append(items, item)
+		counts = append(counts, count)
 	}
 
-	test.EqualFunc(t, got, want, pairEqual)
+	wantItems := []string{"john", "dave", "alice", "chris", "mark"}
+	wantCounts := []int{5, 4, 3, 2, 1}
+
+	test.EqualFunc(t, items, wantItems, slices.Equal)
+	test.EqualFunc(t, counts, wantCounts, slices.Equal)
 }
 
 func TestAll(t *testing.T) {
@@ -213,22 +221,4 @@ func TestItems(t *testing.T) {
 	slices.Sort(want)
 
 	test.EqualFunc(t, items, want, slices.Equal)
-}
-
-func pairEqual[T comparable](a, b []counter.Count[T]) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for index := range a {
-		if a[index].Item != b[index].Item {
-			return false
-		}
-
-		if a[index].Value != b[index].Value {
-			return false
-		}
-	}
-
-	return true
 }

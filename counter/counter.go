@@ -12,12 +12,6 @@ import (
 	"github.com/FollowTheProcess/collections/priority"
 )
 
-// Count holds a countable item along with the number of times it was seen.
-type Count[T comparable] struct {
-	Item  T   // The actual item
-	Value int // The number of times it was counted
-}
-
 // Counter is a convenient construct for counting comparable values.
 type Counter[T comparable] struct {
 	counts map[T]int
@@ -145,23 +139,23 @@ func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }
 
-// TODO(@FollowTheProcess): Make this an iterator and remove 'n'
-
-// MostCommon returns the n most common items in descending order.
-func (c *Counter[T]) MostCommon(n int) []Count[T] {
+// Descending returns an iterator of the item, count pairs in the Counter, yielding them
+// in descending order (i.e. highest count first).
+func (c *Counter[T]) Descending() iter.Seq2[T, int] {
 	queue := priority.New[T]()
 	for item, count := range c.counts {
 		queue.Push(item, count)
 	}
 
-	results := make([]Count[T], 0, n)
-	// Pop off the queue in priority (count) order
-	for range n {
-		item, _ := queue.Pop() //nolint: errcheck // Only error is pop from empty queue which we know we won't hit
-		results = append(results, Count[T]{Item: item, Value: c.counts[item]})
+	// Return an iterator that pops off the queue in priority (count) order
+	return func(yield func(T, int) bool) {
+		for range c.counts {
+			item, _ := queue.Pop() //nolint: errcheck // Only error is pop from empty queue which we know we won't hit
+			if !yield(item, c.counts[item]) {
+				return
+			}
+		}
 	}
-
-	return results
 }
 
 // Counts returns an iterator over the item, count pairs in the Counter, yielding them
