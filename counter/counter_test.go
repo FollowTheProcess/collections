@@ -34,9 +34,9 @@ func TestCount(t *testing.T) {
 	c.Add("human")
 	c.Add("dog")
 
-	test.Equal(t, c.Count("human"), 2) // Wrong number of humans
-	test.Equal(t, c.Count("dog"), 1)   // Wrong number of dogs
-	test.Equal(t, c.Count("cats"), 0)  // No cats in the counter
+	test.Equal(t, c.Get("human"), 2) // Wrong number of humans
+	test.Equal(t, c.Get("dog"), 1)   // Wrong number of dogs
+	test.Equal(t, c.Get("cats"), 0)  // No cats in the counter
 }
 
 func TestFrom(t *testing.T) {
@@ -44,15 +44,15 @@ func TestFrom(t *testing.T) {
 
 	c := counter.From(items)
 
-	test.Equal(t, c.Size(), 8)    // Wrong size
-	test.Equal(t, c.Count(1), 1)  // Wrong number of 1s
-	test.Equal(t, c.Count(2), 2)  // Wrong number of 2s
-	test.Equal(t, c.Count(3), 1)  // Wrong number of 4s
-	test.Equal(t, c.Count(4), 3)  // Wrong number of 4s
-	test.Equal(t, c.Count(5), 2)  // Wrong number of 5s
-	test.Equal(t, c.Count(6), 1)  // Wrong number of 6s
-	test.Equal(t, c.Count(8), 1)  // Wrong number of 8s
-	test.Equal(t, c.Count(12), 1) // Wrong number of 12s
+	test.Equal(t, c.Size(), 8)  // Wrong size
+	test.Equal(t, c.Get(1), 1)  // Wrong number of 1s
+	test.Equal(t, c.Get(2), 2)  // Wrong number of 2s
+	test.Equal(t, c.Get(3), 1)  // Wrong number of 4s
+	test.Equal(t, c.Get(4), 3)  // Wrong number of 4s
+	test.Equal(t, c.Get(5), 2)  // Wrong number of 5s
+	test.Equal(t, c.Get(6), 1)  // Wrong number of 6s
+	test.Equal(t, c.Get(8), 1)  // Wrong number of 8s
+	test.Equal(t, c.Get(12), 1) // Wrong number of 12s
 }
 
 func TestCollect(t *testing.T) {
@@ -60,15 +60,15 @@ func TestCollect(t *testing.T) {
 
 	c := counter.Collect(slices.Values(items))
 
-	test.Equal(t, c.Size(), 8)    // Wrong size
-	test.Equal(t, c.Count(1), 1)  // Wrong number of 1s
-	test.Equal(t, c.Count(2), 2)  // Wrong number of 2s
-	test.Equal(t, c.Count(3), 1)  // Wrong number of 4s
-	test.Equal(t, c.Count(4), 3)  // Wrong number of 4s
-	test.Equal(t, c.Count(5), 2)  // Wrong number of 5s
-	test.Equal(t, c.Count(6), 1)  // Wrong number of 6s
-	test.Equal(t, c.Count(8), 1)  // Wrong number of 8s
-	test.Equal(t, c.Count(12), 1) // Wrong number of 12s
+	test.Equal(t, c.Size(), 8)  // Wrong size
+	test.Equal(t, c.Get(1), 1)  // Wrong number of 1s
+	test.Equal(t, c.Get(2), 2)  // Wrong number of 2s
+	test.Equal(t, c.Get(3), 1)  // Wrong number of 4s
+	test.Equal(t, c.Get(4), 3)  // Wrong number of 4s
+	test.Equal(t, c.Get(5), 2)  // Wrong number of 5s
+	test.Equal(t, c.Get(6), 1)  // Wrong number of 6s
+	test.Equal(t, c.Get(8), 1)  // Wrong number of 8s
+	test.Equal(t, c.Get(12), 1) // Wrong number of 12s
 }
 
 func TestRemove(t *testing.T) {
@@ -90,7 +90,7 @@ func TestRemove(t *testing.T) {
 	test.Equal(t, c.Size(), 3) // Wrong size
 
 	test.Equal(t, c.Remove(tom), 2) // Wrong number of Toms before remove
-	test.Equal(t, c.Count(tom), 0)  // Wrong number of Toms after remove
+	test.Equal(t, c.Get(tom), 0)    // Wrong number of Toms after remove
 
 	test.Equal(t, c.Remove(person{name: "missing", age: 35}), 0) // Missing person returns 0
 }
@@ -158,10 +158,10 @@ func TestMostCommon(t *testing.T) {
 
 	got := c.MostCommon(3)
 
-	want := []counter.Pair[string]{
-		{Item: "john", Count: 4},
-		{Item: "dave", Count: 3},
-		{Item: "alice", Count: 2},
+	want := []counter.Count[string]{
+		{Item: "john", Value: 4},
+		{Item: "dave", Value: 3},
+		{Item: "alice", Value: 2},
 	}
 
 	test.EqualFunc(t, got, want, pairEqual)
@@ -180,7 +180,7 @@ func TestAll(t *testing.T) {
 	c.Add("four")
 	c.Add("four")
 
-	all := maps.Collect(c.All())
+	all := maps.Collect(c.Counts())
 
 	want := map[string]int{
 		"one":   1,
@@ -215,7 +215,7 @@ func TestItems(t *testing.T) {
 	test.EqualFunc(t, items, want, slices.Equal)
 }
 
-func pairEqual[T comparable](a, b []counter.Pair[T]) bool {
+func pairEqual[T comparable](a, b []counter.Count[T]) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -225,7 +225,7 @@ func pairEqual[T comparable](a, b []counter.Pair[T]) bool {
 			return false
 		}
 
-		if a[index].Count != b[index].Count {
+		if a[index].Value != b[index].Value {
 			return false
 		}
 	}

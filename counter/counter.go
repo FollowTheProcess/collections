@@ -12,12 +12,10 @@ import (
 	"github.com/FollowTheProcess/collections/priority"
 )
 
-// TODO(@FollowTheProcess): Rename Pair to Count
-
-// Pair holds a countable item along with its count.
-type Pair[T comparable] struct {
+// Count holds a countable item along with the number of times it was seen.
+type Count[T comparable] struct {
 	Item  T   // The actual item
-	Count int // The number of times it was counted
+	Value int // The number of times it was counted
 }
 
 // Counter is a convenient construct for counting comparable values.
@@ -121,10 +119,8 @@ func (c *Counter[T]) Remove(item T) int {
 	return v
 }
 
-// TODO(@FollowTheProcess): Rename Count to Get
-
-// Count returns the count of item, or 0 if it's not yet been seen.
-func (c *Counter[T]) Count(item T) int {
+// Get returns the count of item, or 0 if it's not yet been seen.
+func (c *Counter[T]) Get(item T) int {
 	v, exists := c.counts[item]
 	if !exists {
 		return 0
@@ -152,27 +148,25 @@ func (c *Counter[T]) Reset() {
 // TODO(@FollowTheProcess): Make this an iterator and remove 'n'
 
 // MostCommon returns the n most common items in descending order.
-func (c *Counter[T]) MostCommon(n int) []Pair[T] {
+func (c *Counter[T]) MostCommon(n int) []Count[T] {
 	queue := priority.New[T]()
 	for item, count := range c.counts {
 		queue.Push(item, count)
 	}
 
-	results := make([]Pair[T], 0, n)
+	results := make([]Count[T], 0, n)
 	// Pop off the queue in priority (count) order
 	for range n {
 		item, _ := queue.Pop() //nolint: errcheck // Only error is pop from empty queue which we know we won't hit
-		results = append(results, Pair[T]{Item: item, Count: c.counts[item]})
+		results = append(results, Count[T]{Item: item, Value: c.counts[item]})
 	}
 
 	return results
 }
 
-// TODO(@FollowTheProcess): Rename All to Counts
-
-// All returns an iterator over the item, count pairs in the Counter, yielding them
+// Counts returns an iterator over the item, count pairs in the Counter, yielding them
 // in a non-deterministic order.
-func (c *Counter[T]) All() iter.Seq2[T, int] {
+func (c *Counter[T]) Counts() iter.Seq2[T, int] {
 	return func(yield func(T, int) bool) {
 		for item, count := range c.counts {
 			if !yield(item, count) {
