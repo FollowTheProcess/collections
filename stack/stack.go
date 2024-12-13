@@ -97,7 +97,7 @@ func (s *Stack[T]) Empty() bool {
 	return len(s.container) == 0
 }
 
-// Items returns the an iterator over the stack in LIFO order.
+// Items returns an iterator over the stack in LIFO order.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
