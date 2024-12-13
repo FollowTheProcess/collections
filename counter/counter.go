@@ -12,6 +12,8 @@ import (
 	"github.com/FollowTheProcess/collections/priority"
 )
 
+// TODO(@FollowTheProcess): Rename Pair to Count
+
 // Pair holds a countable item along with its count.
 type Pair[T comparable] struct {
 	Item  T   // The actual item
@@ -119,6 +121,8 @@ func (c *Counter[T]) Remove(item T) int {
 	return v
 }
 
+// TODO(@FollowTheProcess): Rename Count to Get
+
 // Count returns the count of item, or 0 if it's not yet been seen.
 func (c *Counter[T]) Count(item T) int {
 	v, exists := c.counts[item]
@@ -145,6 +149,8 @@ func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }
 
+// TODO(@FollowTheProcess): Make this an iterator and remove 'n'
+
 // MostCommon returns the n most common items in descending order.
 func (c *Counter[T]) MostCommon(n int) []Pair[T] {
 	queue := priority.New[T]()
@@ -161,3 +167,19 @@ func (c *Counter[T]) MostCommon(n int) []Pair[T] {
 
 	return results
 }
+
+// TODO(@FollowTheProcess): Rename All to Counts
+
+// All returns an iterator over the items in the Counter, yielding them
+// in a non-deterministic order.
+func (c *Counter[T]) All() iter.Seq2[T, int] {
+	return func(yield func(T, int) bool) {
+		for item, count := range c.counts {
+			if !yield(item, count) {
+				return
+			}
+		}
+	}
+}
+
+// TODO(@FollowTheProcess): Add an Items() method that yields the keys of the internal map

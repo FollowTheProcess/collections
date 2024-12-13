@@ -1,6 +1,7 @@
 package counter_test
 
 import (
+	"maps"
 	"slices"
 	"testing"
 
@@ -166,7 +167,30 @@ func TestMostCommon(t *testing.T) {
 	test.EqualFunc(t, got, want, pairEqual)
 }
 
-// TODO(@FollowTheProcess): Benchmark
+func TestAll(t *testing.T) {
+	c := counter.New[string]()
+	c.Add("one")
+	c.Add("two")
+	c.Add("two")
+	c.Add("three")
+	c.Add("three")
+	c.Add("three")
+	c.Add("four")
+	c.Add("four")
+	c.Add("four")
+	c.Add("four")
+
+	all := maps.Collect(c.All())
+
+	want := map[string]int{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+		"four":  4,
+	}
+
+	test.EqualFunc(t, all, want, maps.Equal)
+}
 
 func pairEqual[T comparable](a, b []counter.Pair[T]) bool {
 	if len(a) != len(b) {
