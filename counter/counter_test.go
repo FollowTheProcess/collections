@@ -176,30 +176,41 @@ func TestDescending(t *testing.T) {
 }
 
 func TestMostCommon(t *testing.T) {
-	names := []string{
-		"dave",
-		"dave",
-		"dave",
-		"dave",
-		"chris",
-		"chris",
-		"john",
-		"john",
-		"john",
-		"john",
-		"john",
-		"mark",
-		"alice",
-		"alice",
-		"alice",
-	}
+	t.Run("empty", func(t *testing.T) {
+		c := counter.New[int]()
 
-	c := counter.From(names)
+		item, count := c.MostCommon()
 
-	name, count := c.MostCommon()
+		test.Equal(t, item, 0)
+		test.Equal(t, count, 0)
+	})
 
-	test.Equal(t, name, "john")
-	test.Equal(t, count, 5)
+	t.Run("full", func(t *testing.T) {
+		names := []string{
+			"dave",
+			"dave",
+			"dave",
+			"dave",
+			"chris",
+			"chris",
+			"john",
+			"john",
+			"john",
+			"john",
+			"john",
+			"mark",
+			"alice",
+			"alice",
+			"alice",
+		}
+
+		c := counter.From(names)
+
+		name, count := c.MostCommon()
+
+		test.Equal(t, name, "john")
+		test.Equal(t, count, 5)
+	})
 }
 
 func TestAll(t *testing.T) {
