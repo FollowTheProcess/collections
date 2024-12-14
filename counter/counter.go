@@ -7,9 +7,9 @@
 package counter
 
 import (
+	"cmp"
 	"iter"
-
-	"github.com/FollowTheProcess/collections/priority"
+	"slices"
 )
 
 // Counter is a convenient construct for counting comparable values.
@@ -148,8 +148,6 @@ func (c *Counter[T]) MostCommon() (item T, count int) {
 		return zero, 0
 	}
 
-	// Faster to just loop over the underlying map that construct the priority queue
-	// just to get the value with the highest count
 	var mostCommon T
 	highestCount := 0
 	for item, count := range c.counts {
@@ -165,16 +163,23 @@ func (c *Counter[T]) MostCommon() (item T, count int) {
 // Descending returns an iterator of the item, count pairs in the Counter, yielding them
 // in descending order (i.e. highest count first).
 func (c *Counter[T]) Descending() iter.Seq2[T, int] {
-	queue := priority.New[T]()
-	for item, count := range c.counts {
-		queue.Push(item, count)
+	type count struct {
+		item  T
+		value int
+	}
+	counts := make([]count, 0, len(c.counts))
+	for item, value := range c.counts {
+		counts = append(counts, count{item: item, value: value})
 	}
 
-	// Return an iterator that pops off the queue in priority (count) order
+	// Sort by value in descending order
+	slices.SortStableFunc(counts, func(a, b count) int {
+		return cmp.Compare(b.value, a.value)
+	})
+
 	return func(yield func(T, int) bool) {
-		for range c.counts {
-			item, _ := queue.Pop() //nolint: errcheck // Only error is pop from empty queue which we know we won't hit
-			if !yield(item, c.counts[item]) {
+		for _, count := range counts {
+			if !yield(count.item, count.value) {
 				return
 			}
 		}
