@@ -118,7 +118,7 @@ func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
 }
 
 // Newest returns the newest key, value pair in the map, i.e. the pair that
-// was inserted last. Not that in place modifications do not update the order.
+// was inserted last. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
 	var zeroKey K
 	var zeroVal V
