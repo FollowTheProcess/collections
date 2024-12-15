@@ -8,7 +8,7 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions: {}
@@ -85,3 +85,16 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+
+  typos:
+    name: Typos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check for Typos
+        uses: crate-ci/typos@v1.28.3

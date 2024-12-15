@@ -208,7 +208,7 @@ func BenchmarkGraphSort(b *testing.B) {
 	// Because the graph.Sort method alters the state of the graph (removing edges)
 	// a new graph must be constructed for each run meaning this is actually quite slow to run (~1 minute)
 	// but we stop and start the timer at the right places to ensure just the sorting code's performance is measured
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		b.StopTimer()
 		graph := makeGraph(b)
 		b.StartTimer()
