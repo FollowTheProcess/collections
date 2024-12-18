@@ -7,6 +7,7 @@ package set
 import (
 	"fmt"
 	"iter"
+	"math"
 	"slices"
 )
 
@@ -137,7 +138,8 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	union := New[T]()
 	for _, set := range sets {
 		for item := range set.container {
-			union.Insert(item)
+			// Don't need the additional checks of Insert
+			union.container[item] = struct{}{}
 		}
 	}
 
@@ -145,19 +147,34 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 }
 
 // Intersection returns a set containing all the items present in both a and b.
-func Intersection[T comparable](a, b *Set[T]) *Set[T] {
+func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	intersection := New[T]()
-	if a.Size() <= b.Size() {
-		for item := range a.container {
-			if b.Contains(item) {
-				intersection.Insert(item)
+
+	n := len(sets) // Number of sets we've been passed
+
+	var smallest *Set[T]
+	minSize := math.MaxInt
+	for _, set := range sets {
+		if len(set.container) < minSize {
+			smallest = set
+			minSize = len(set.container)
+		}
+	}
+
+	for item := range smallest.container {
+		numContains := 0 // The number of sets that contain this item
+		for _, other := range sets {
+			if other.Contains(item) {
+				numContains++
 			}
 		}
-	} else {
-		for item := range b.container {
-			if a.Contains(item) {
-				intersection.Insert(item)
-			}
+
+		// If the number of other sets that contain the item is equal
+		// to the total number of sets we have been passed, then it's
+		// present in all of them and should be included in the intersection
+		if numContains == n {
+			// Don't need the additional checks of Insert
+			intersection.container[item] = struct{}{}
 		}
 	}
 
@@ -169,7 +186,8 @@ func Difference[T comparable](a, b *Set[T]) *Set[T] {
 	result := New[T]()
 	for item := range a.container {
 		if !b.Contains(item) {
-			result.Insert(item)
+			// Don't need the additional checks of Insert
+			result.container[item] = struct{}{}
 		}
 	}
 

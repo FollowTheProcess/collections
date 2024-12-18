@@ -161,6 +161,7 @@ func TestUnion(t *testing.T) {
 func TestIntersection(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -171,6 +172,11 @@ func TestIntersection(t *testing.T) {
 	that.Insert("to")
 	that.Insert("you")
 	that.Insert("too")
+
+	another.Insert("hello")
+	another.Insert("from")
+	another.Insert("another")
+	another.Insert("set")
 
 	intersection := slices.Sorted(set.Intersection(this, that).Items())
 
