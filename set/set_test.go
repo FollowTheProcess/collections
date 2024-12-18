@@ -178,7 +178,7 @@ func TestIntersection(t *testing.T) {
 	another.Insert("another")
 	another.Insert("set")
 
-	intersection := slices.Sorted(set.Intersection(this, that).Items())
+	intersection := slices.Sorted(set.Intersection(this, that, another).Items())
 
 	want := []string{"hello"}
 
@@ -188,6 +188,7 @@ func TestIntersection(t *testing.T) {
 func TestDifference(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -199,9 +200,15 @@ func TestDifference(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	difference := slices.Sorted(set.Difference(this, that).Items())
+	another.Insert("hello")
+	another.Insert("from")
+	another.Insert("another")
+	another.Insert("set")
+	another.Insert("kenobi")
 
-	want := []string{"general", "kenobi", "there"}
+	difference := slices.Sorted(set.Difference(this, that, another).Items())
+
+	want := []string{"general", "there"}
 
 	test.EqualFunc(t, difference, want, slices.Equal)
 }

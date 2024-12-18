@@ -146,7 +146,7 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	return union
 }
 
-// Intersection returns a set containing all the items present in both a and b.
+// Intersection returns a set containing all the items present in all the input sets, without duplicates.
 func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	intersection := New[T]()
 
@@ -181,15 +181,27 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	return intersection
 }
 
-// Difference returns a set containing the items present in a but not b.
-func Difference[T comparable](a, b *Set[T]) *Set[T] {
-	result := New[T]()
-	for item := range a.container {
-		if !b.Contains(item) {
-			// Don't need the additional checks of Insert
-			result.container[item] = struct{}{}
+// Difference returns a set containing the items present in set that are not contained in any of the others.
+func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
+	difference := New[T]()
+
+	n := len(others)
+
+	for item := range set.container {
+		numNotContains := 0 // The number of sets that do not contain this item
+		for _, other := range others {
+			if !other.Contains(item) {
+				numNotContains++
+			}
+		}
+
+		// If the number of other sets that don't contain the item is equal
+		// to the total number of other sets we've been passed, then the item is
+		// unique to set and should be added to the difference
+		if numNotContains == n {
+			difference.container[item] = struct{}{}
 		}
 	}
 
-	return result
+	return difference
 }
