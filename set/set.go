@@ -131,24 +131,21 @@ func (s *Set[T]) String() string {
 	return fmt.Sprintf("%v", slices.Collect(s.Items()))
 }
 
-// Union returns a set that is the combination of a and b, i.e. all
-// the items from both sets combined into one, with no duplicates.
-func Union[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+// Union returns a set that is the combination of all the input sets, i.e. all
+// the items from all the sets in one new set.
+func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	union := New[T]()
-
-	for item := range a.container {
-		union.Insert(item)
-	}
-
-	for item := range b.container {
-		union.Insert(item)
+	for _, set := range sets {
+		for item := range set.container {
+			union.Insert(item)
+		}
 	}
 
 	return union
 }
 
 // Intersection returns a set containing all the items present in both a and b.
-func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+func Intersection[T comparable](a, b *Set[T]) *Set[T] {
 	// Take copies so as not to alter the original sets when we swap
 	larger := a
 	smaller := b
@@ -170,7 +167,7 @@ func Intersection[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
 }
 
 // Difference returns a set containing the items present in a but not b.
-func Difference[S *Set[T], T comparable](a, b *Set[T]) *Set[T] {
+func Difference[T comparable](a, b *Set[T]) *Set[T] {
 	result := New[T]()
 	for item := range a.container {
 		if !b.Contains(item) {
