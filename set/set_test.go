@@ -123,6 +123,7 @@ func TestCollect(t *testing.T) {
 func TestUnion(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -134,9 +135,25 @@ func TestUnion(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	union := slices.Sorted(set.Union(this, that).Items())
+	another.Insert("hello")
+	another.Insert("again")
+	another.Insert("from")
+	another.Insert("another")
 
-	want := []string{"general", "hello", "kenobi", "there", "to", "too", "you"}
+	union := slices.Sorted(set.Union(this, that, another).Items())
+
+	want := []string{
+		"again",
+		"another",
+		"from",
+		"general",
+		"hello",
+		"kenobi",
+		"there",
+		"to",
+		"too",
+		"you",
+	}
 
 	test.EqualFunc(t, union, want, slices.Equal)
 }
@@ -144,6 +161,7 @@ func TestUnion(t *testing.T) {
 func TestIntersection(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -155,7 +173,12 @@ func TestIntersection(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	intersection := slices.Sorted(set.Intersection(this, that).Items())
+	another.Insert("hello")
+	another.Insert("from")
+	another.Insert("another")
+	another.Insert("set")
+
+	intersection := slices.Sorted(set.Intersection(this, that, another).Items())
 
 	want := []string{"hello"}
 
@@ -165,6 +188,7 @@ func TestIntersection(t *testing.T) {
 func TestDifference(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -176,9 +200,15 @@ func TestDifference(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	difference := slices.Sorted(set.Difference(this, that).Items())
+	another.Insert("hello")
+	another.Insert("from")
+	another.Insert("another")
+	another.Insert("set")
+	another.Insert("kenobi")
 
-	want := []string{"general", "kenobi", "there"}
+	difference := slices.Sorted(set.Difference(this, that, another).Items())
+
+	want := []string{"general", "there"}
 
 	test.EqualFunc(t, difference, want, slices.Equal)
 }

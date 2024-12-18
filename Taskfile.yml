@@ -28,8 +28,11 @@ tasks:
     preconditions:
       - sh: command -v golines
         msg: golines not installed, see https://github.com/segmentio/golines
+
+      - sh: command -v gofumpt
+        msg: requires gofumpt, run `go install mvdan.cc/gofumpt@latest`
     cmds:
-      - go fmt ./...
+      - gofumpt -w -extra .
       - golines . --ignore-generated --write-output
 
   test:
@@ -51,6 +54,8 @@ tasks:
     sources:
       - "**/*.go"
       - .golangci.yml
+    deps:
+      - fmt
     cmds:
       - golangci-lint run --fix
     preconditions:
