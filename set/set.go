@@ -132,7 +132,7 @@ func (s *Set[T]) String() string {
 }
 
 // Union returns a set that is the combination of all the input sets, i.e. all
-// the items from all the sets in one new set.
+// the items from all the sets in one new set, without duplicates.
 func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	union := New[T]()
 	for _, set := range sets {
@@ -146,20 +146,18 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Intersection returns a set containing all the items present in both a and b.
 func Intersection[T comparable](a, b *Set[T]) *Set[T] {
-	// Take copies so as not to alter the original sets when we swap
-	larger := a
-	smaller := b
-
 	intersection := New[T]()
-
-	// Optimisation: iterate through the smallest one
-	if a.Size() < b.Size() {
-		larger, smaller = b, a
-	}
-
-	for item := range smaller.container {
-		if larger.Contains(item) {
-			intersection.Insert(item)
+	if a.Size() <= b.Size() {
+		for item := range a.container {
+			if b.Contains(item) {
+				intersection.Insert(item)
+			}
+		}
+	} else {
+		for item := range b.container {
+			if a.Contains(item) {
+				intersection.Insert(item)
+			}
 		}
 	}
 

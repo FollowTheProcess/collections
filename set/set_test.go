@@ -123,6 +123,7 @@ func TestCollect(t *testing.T) {
 func TestUnion(t *testing.T) {
 	this := set.New[string]()
 	that := set.New[string]()
+	another := set.New[string]()
 
 	this.Insert("hello")
 	this.Insert("there")
@@ -134,9 +135,25 @@ func TestUnion(t *testing.T) {
 	that.Insert("you")
 	that.Insert("too")
 
-	union := slices.Sorted(set.Union(this, that).Items())
+	another.Insert("hello")
+	another.Insert("again")
+	another.Insert("from")
+	another.Insert("another")
 
-	want := []string{"general", "hello", "kenobi", "there", "to", "too", "you"}
+	union := slices.Sorted(set.Union(this, that, another).Items())
+
+	want := []string{
+		"again",
+		"another",
+		"from",
+		"general",
+		"hello",
+		"kenobi",
+		"there",
+		"to",
+		"too",
+		"you",
+	}
 
 	test.EqualFunc(t, union, want, slices.Equal)
 }

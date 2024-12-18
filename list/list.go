@@ -151,7 +151,7 @@ func (l *List[T]) Backwards() iter.Seq[T] {
 }
 
 // insertAfter inserts a new node after an existing one.
-func (l *List[T]) insertAfter(after *Node[T], node *Node[T]) {
+func (l *List[T]) insertAfter(after, node *Node[T]) {
 	node.prev = after
 
 	if after.next != nil {
@@ -169,7 +169,7 @@ func (l *List[T]) insertAfter(after *Node[T], node *Node[T]) {
 }
 
 // insertBefore inserts a new element before an existing one.
-func (l *List[T]) insertBefore(before *Node[T], node *Node[T]) {
+func (l *List[T]) insertBefore(before, node *Node[T]) {
 	node.next = before
 
 	if before.prev != nil {

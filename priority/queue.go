@@ -32,7 +32,11 @@ func New[T any]() *Queue[T] {
 // the caller to construct the slice of Element themselves.
 func From[T any](elements []Element[T]) *Queue[T] {
 	queue := &Queue[T]{
-		container: make([]Element[T], 0, len(elements)), // Create a new slice so we own the data internally
+		container: make(
+			[]Element[T],
+			0,
+			len(elements),
+		), // Create a new slice so we own the data internally
 	}
 
 	queue.container = append(queue.container, elements...)
