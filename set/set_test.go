@@ -342,16 +342,64 @@ func TestDifference(t *testing.T) {
 }
 
 func TestIsDisjoint(t *testing.T) {
-	one := set.From([]int{1, 2, 3})
-	two := set.New[int]()
+	tests := []struct {
+		name string          // Name of the test case
+		sets []*set.Set[int] // The sets to pass to IsDisjoint
+		want bool            // Expected answer
+	}{
+		{
+			name: "nil",
+			sets: nil,
+			want: false,
+		},
+		{
+			name: "empty",
+			sets: []*set.Set[int]{set.New[int]()},
+			want: false,
+		},
+		{
+			name: "one empty",
+			sets: []*set.Set[int]{
+				set.New[int](),
+				set.From([]int{1, 2}),
+			},
+			want: true,
+		},
+		{
+			name: "two empty",
+			sets: []*set.Set[int]{
+				set.New[int](),
+				set.New[int](),
+			},
+			want: true,
+		},
+		{
+			name: "three full",
+			sets: []*set.Set[int]{
+				set.From([]int{1, 2, 3, 4}),
+				set.From([]int{1, 5, 6, 7}),
+				set.From([]int{5, 2, 6, 3}),
+			},
+			want: false,
+		},
+		{
+			name: "no common items",
+			sets: []*set.Set[int]{
+				set.From([]int{1, 2, 3, 4}),
+				set.From([]int{5, 6, 7, 8, 9}),
+				set.From([]int{10, 11, 12, 13}),
+				set.From([]int{14}),
+				set.From([]int{15, 16}),
+			},
+			want: true, // Nothing in common between any set
+		},
+	}
 
-	test.True(t, set.IsDisjoint(one, two))
-
-	two.Insert(4)
-	test.True(t, set.IsDisjoint(one, two))
-
-	two.Insert(1) // No longer disjoint, they both contain 1 now
-	test.False(t, set.IsDisjoint(one, two))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.Equal(t, set.IsDisjoint(tt.sets...), tt.want)
+		})
+	}
 }
 
 func TestString(t *testing.T) {

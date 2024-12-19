@@ -283,6 +283,10 @@ func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 		return false
 	}
 
+	if len(sets) == 1 {
+		return false // It has every item in common with itself
+	}
+
 	var smallestIndex int // The index in sets where the smallest set is located
 	minSize := math.MaxInt
 	for index, set := range sets {
