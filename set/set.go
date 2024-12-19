@@ -10,6 +10,8 @@ import (
 	"math"
 )
 
+// TODO(@FollowTheProcess): IsDisjoint, IsSubset, IsSuperSet, SymmetricDifference
+
 // Set is a simple, generic implementation of a mathematical set.
 type Set[T comparable] struct {
 	container map[T]struct{}
