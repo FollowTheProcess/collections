@@ -7,7 +7,9 @@ package set
 import (
 	"fmt"
 	"iter"
+	"maps"
 	"math"
+	"slices"
 )
 
 // TODO(@FollowTheProcess): IsDisjoint, IsSubset, IsSuperSet, SymmetricDifference
@@ -150,7 +152,27 @@ func (s *Set[T]) IsEmpty() bool {
 // String implements [fmt.Stringer] for a [Set] and allows
 // it to print itself.
 func (s *Set[T]) String() string {
-	return fmt.Sprintf("%v", s.container)
+	return fmt.Sprintf("%v", slices.Collect(maps.Keys(s.container)))
+}
+
+// Equal returns whether two sets are equal to one another, i.e. they are exactly
+// the same size and contain exactly the same elements.
+func Equal[T comparable](a, b *Set[T]) bool {
+	if a == nil || b == nil {
+		return false
+	}
+
+	if len(a.container) != len(b.container) {
+		return false
+	}
+
+	for item := range a.container {
+		if _, ok := b.container[item]; !ok {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Union returns a set that is the combination of all the input sets, i.e. all
@@ -169,6 +191,15 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Intersection returns a set containing all the items present in all the input sets, without duplicates.
 func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
+	if sets == nil {
+		return New[T]()
+	}
+
+	if len(sets) == 1 {
+		// Just return the input set as there is nothing to intersect with
+		return sets[0]
+	}
+
 	intersection := New[T]()
 
 	n := len(sets) // Number of sets we've been passed
@@ -176,6 +207,13 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	var smallest *Set[T]
 	minSize := math.MaxInt
 	for _, set := range sets {
+		// If any set is empty, we can immediately return the empty set because
+		// no matter what the other sets contain, anything intersection empty set
+		// should return the empty set
+		if set.IsEmpty() {
+			return New[T]()
+		}
+
 		if len(set.container) < minSize {
 			smallest = set
 			minSize = len(set.container)
@@ -204,6 +242,14 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Difference returns a set containing the items present in set that are not contained in any of the others.
 func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
+	if set == nil || others == nil {
+		return New[T]()
+	}
+
+	if set.IsEmpty() {
+		return New[T]()
+	}
+
 	difference := New[T]()
 
 	n := len(others)
@@ -225,4 +271,45 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 	}
 
 	return difference
+}
+
+// IsDisjoint returns whether the sets have no items in common with one another.
+//
+// It is equivalent to checking for the empty intersection but is significantly faster
+// than calling [Intersection] because it does not construct the result set and does no allocation.
+func IsDisjoint[T comparable](sets ...*Set[T]) bool {
+	// Easy to handle early and guards against indexing later
+	if len(sets) == 0 {
+		return false
+	}
+
+	if len(sets) == 1 {
+		return false // It has every item in common with itself
+	}
+
+	var smallestIndex int // The index in sets where the smallest set is located
+	minSize := math.MaxInt
+	for index, set := range sets {
+		if len(set.container) < minSize {
+			minSize = len(set.container)
+			smallestIndex = index
+		}
+	}
+
+	smallest := sets[smallestIndex]
+
+	// Remove the smallest one so we're left with a list of "others"
+	// otherwise disjoint will always be false as the smallest set
+	// will, by definition, include the value and will be included in sets
+	sets = slices.Delete(sets, smallestIndex, smallestIndex+1)
+
+	for item := range smallest.container {
+		for _, other := range sets {
+			if other.Contains(item) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
