@@ -22,15 +22,21 @@ func New[T comparable]() *Counter[T] {
 	return &Counter[T]{counts: make(map[T]int)}
 }
 
+// WithCapacity constructs and returns a new [Counter] with the given capacity.
+//
+// This can be a useful performance improvement when the number of unique items to count
+// is known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[T comparable](capacity int) *Counter[T] {
+	return &Counter[T]{counts: make(map[T]int, capacity)}
+}
+
 // From builds a [Counter] from an existing slice of items, counting
 // them in the order they are given.
 //
 //	items := []string{"apple", "apple", "orange", "banana"}
 //	counts := counter.From(items)
 func From[T comparable](items []T) *Counter[T] {
-	counter := &Counter[T]{
-		counts: make(map[T]int, len(items)), // Preallocate the known size
-	}
+	counter := WithCapacity[T](len(items))
 
 	for _, item := range items {
 		counter.Add(item)

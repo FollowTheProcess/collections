@@ -35,7 +35,7 @@ func WithCapacity[T any](capacity int) *Queue[T] {
 //
 // The queue will be preallocated the size of len(items).
 func From[T any](items []T) *Queue[T] {
-	queue := &Queue[T]{container: make([]T, 0, len(items))}
+	queue := WithCapacity[T](len(items))
 	for _, item := range items {
 		queue.Push(item)
 	}

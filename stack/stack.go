@@ -33,7 +33,7 @@ func WithCapacity[T any](capacity int) *Stack[T] {
 //
 // The stack will be preallocated the size of len(items).
 func From[T any](items []T) *Stack[T] {
-	stack := &Stack[T]{container: make([]T, 0, len(items))}
+	stack := WithCapacity[T](len(items))
 	for _, item := range items {
 		stack.Push(item)
 	}
