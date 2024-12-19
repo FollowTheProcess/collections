@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"iter"
 	"math"
+	"slices"
 )
 
 // TODO(@FollowTheProcess): IsDisjoint, IsSubset, IsSuperSet, SymmetricDifference
@@ -225,4 +226,41 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 	}
 
 	return difference
+}
+
+// IsDisjoint returns whether the sets have no items in common with one another.
+//
+// It is equivalent to checking for the empty intersection but is significantly faster
+// than calling [Intersection] because it does not construct the result set.
+func IsDisjoint[T comparable](sets ...*Set[T]) bool {
+	// Easy to handle early and guards against indexing later
+	if len(sets) == 0 {
+		return false
+	}
+
+	var smallestIndex int // The index in sets where the smallest set is located
+	minSize := math.MaxInt
+	for index, set := range sets {
+		if len(set.container) < minSize {
+			minSize = len(set.container)
+			smallestIndex = index
+		}
+	}
+
+	smallest := sets[smallestIndex]
+
+	// Remove the smallest one so we're left with a list of "others"
+	// otherwise disjoint will always be false as the smallest set
+	// will, by definition, include the value and will be included in sets
+	sets = slices.Delete(sets, smallestIndex, smallestIndex+1)
+
+	for item := range smallest.container {
+		for _, other := range sets {
+			if other.Contains(item) {
+				return false
+			}
+		}
+	}
+
+	return true
 }

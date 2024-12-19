@@ -213,6 +213,19 @@ func TestDifference(t *testing.T) {
 	test.EqualFunc(t, difference, want, slices.Equal)
 }
 
+func TestIsDisjoint(t *testing.T) {
+	one := set.From([]int{1, 2, 3})
+	two := set.New[int]()
+
+	test.True(t, set.IsDisjoint(one, two))
+
+	two.Insert(4)
+	test.True(t, set.IsDisjoint(one, two))
+
+	two.Insert(1) // No longer disjoint, they both contain 1 now
+	test.False(t, set.IsDisjoint(one, two))
+}
+
 func TestString(t *testing.T) {
 	s := set.New[string]()
 
@@ -298,7 +311,6 @@ func BenchmarkIntersection(b *testing.B) {
 	}
 
 	b.ResetTimer()
-
 	for i := 0; i < b.N; i++ {
 		set.Intersection(s1, s2)
 	}
@@ -340,5 +352,20 @@ func BenchmarkDifference(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		set.Difference(s1, s2)
+	}
+}
+
+func BenchmarkIsDisjoint(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		set.IsDisjoint(s1, s2)
 	}
 }
