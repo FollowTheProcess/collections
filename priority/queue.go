@@ -23,7 +23,7 @@ type Queue[T any] struct {
 // consider using [From] or [FromFunc] as they are more performant than constructing
 // and empty queue and filling it in a loop.
 func New[T any]() *Queue[T] {
-	return &Queue[T]{}
+	return &Queue[T]{container: make([]Element[T], 0)}
 }
 
 // From builds and returns a priority Queue from an already established []Element.
