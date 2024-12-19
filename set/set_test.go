@@ -177,7 +177,7 @@ func TestUnion(t *testing.T) {
 			want: set.New[string](),
 		},
 		{
-			name: "both empty",
+			name: "empty",
 			sets: []*set.Set[string]{set.New[string]()},
 			want: set.New[string](),
 		},
@@ -188,6 +188,14 @@ func TestUnion(t *testing.T) {
 				set.From([]string{"hello", "there"}),
 			},
 			want: set.From([]string{"hello", "there"}),
+		},
+		{
+			name: "two empty",
+			sets: []*set.Set[string]{
+				set.New[string](),
+				set.New[string](),
+			},
+			want: set.New[string](),
 		},
 		{
 			name: "three full",
@@ -219,58 +227,118 @@ func TestUnion(t *testing.T) {
 }
 
 func TestIntersection(t *testing.T) {
-	this := set.New[string]()
-	that := set.New[string]()
-	another := set.New[string]()
+	tests := []struct {
+		want *set.Set[string]   // The expected intersection set
+		name string             // The name of the test case
+		sets []*set.Set[string] // The sets to pass to Intersection
+	}{
+		{
+			name: "nil",
+			sets: nil,
+			want: set.New[string](),
+		},
+		{
+			name: "empty",
+			sets: []*set.Set[string]{set.New[string]()},
+			want: set.New[string](),
+		},
+		{
+			name: "one empty",
+			sets: []*set.Set[string]{
+				set.New[string](),
+				set.From([]string{"hello", "there"}),
+			},
+			want: set.New[string](),
+		},
+		{
+			name: "two empty",
+			sets: []*set.Set[string]{
+				set.New[string](),
+				set.New[string](),
+			},
+			want: set.New[string](),
+		},
+		{
+			name: "three full",
+			sets: []*set.Set[string]{
+				set.From([]string{"hello", "there", "general", "kenobi"}),
+				set.From([]string{"hello", "to", "you", "too"}),
+				set.From([]string{"hello", "from", "another", "set"}),
+			},
+			want: set.From([]string{"hello"}), // hello is the only item common to all
+		},
+		{
+			name: "no common items",
+			sets: []*set.Set[string]{
+				set.From([]string{"hello", "there", "general", "kenobi"}),
+				set.From([]string{"random", "other", "words"}),
+				set.From([]string{"oh", "no", "nothing", "matches"}),
+				set.From([]string{"these", "sets", "don't"}),
+				set.From([]string{"share", "anything"}),
+			},
+			want: set.New[string](),
+		},
+	}
 
-	this.Insert("hello")
-	this.Insert("there")
-	this.Insert("general")
-	this.Insert("kenobi")
-
-	that.Insert("hello")
-	that.Insert("to")
-	that.Insert("you")
-	that.Insert("too")
-
-	another.Insert("hello")
-	another.Insert("from")
-	another.Insert("another")
-	another.Insert("set")
-
-	intersection := slices.Sorted(set.Intersection(this, that, another).Items())
-
-	want := []string{"hello"}
-
-	test.EqualFunc(t, intersection, want, slices.Equal)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.EqualFunc(t, set.Intersection(tt.sets...), tt.want, set.Equal)
+		})
+	}
 }
 
 func TestDifference(t *testing.T) {
-	this := set.New[string]()
-	that := set.New[string]()
-	another := set.New[string]()
+	tests := []struct {
+		target *set.Set[string]   // The target set
+		want   *set.Set[string]   // The expected difference set
+		name   string             // The name of the test case
+		others []*set.Set[string] // The sets to pass to Difference
+	}{
+		{
+			name:   "nil",
+			target: nil,
+			others: nil,
+			want:   set.New[string](),
+		},
+		{
+			name:   "empty",
+			target: set.New[string](),
+			others: []*set.Set[string]{set.New[string]()},
+			want:   set.New[string](),
+		},
+		{
+			name:   "empty target",
+			target: set.New[string](),
+			others: []*set.Set[string]{
+				set.From([]string{"some", "stuff", "here"}),
+				set.From([]string{"more", "here", "too"}),
+			},
+			want: set.New[string](),
+		},
+		{
+			name:   "full target empty others",
+			target: set.From([]string{"target", "has", "items"}),
+			others: []*set.Set[string]{
+				set.New[string](),
+			},
+			want: set.From([]string{"target", "has", "items"}),
+		},
+		{
+			name:   "three full",
+			target: set.From([]string{"hello", "there", "general", "kenobi"}),
+			others: []*set.Set[string]{
+				set.From([]string{"hello", "to", "you", "to"}),
+				set.From([]string{"hello", "from", "another", "set", "kenobi"}),
+			},
+			want: set.From([]string{"general", "there"}),
+		},
+	}
 
-	this.Insert("hello")
-	this.Insert("there")
-	this.Insert("general")
-	this.Insert("kenobi")
-
-	that.Insert("hello")
-	that.Insert("to")
-	that.Insert("you")
-	that.Insert("too")
-
-	another.Insert("hello")
-	another.Insert("from")
-	another.Insert("another")
-	another.Insert("set")
-	another.Insert("kenobi")
-
-	difference := slices.Sorted(set.Difference(this, that, another).Items())
-
-	want := []string{"general", "there"}
-
-	test.EqualFunc(t, difference, want, slices.Equal)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.EqualFunc(t, set.Difference(tt.target, tt.others...), tt.want, set.Equal)
+		})
+	}
 }
 
 func TestIsDisjoint(t *testing.T) {

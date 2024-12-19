@@ -7,6 +7,7 @@ package set
 import (
 	"fmt"
 	"iter"
+	"maps"
 	"math"
 	"slices"
 )
@@ -151,7 +152,7 @@ func (s *Set[T]) IsEmpty() bool {
 // String implements [fmt.Stringer] for a [Set] and allows
 // it to print itself.
 func (s *Set[T]) String() string {
-	return fmt.Sprintf("%v", s.container)
+	return fmt.Sprintf("%v", slices.Collect(maps.Keys(s.container)))
 }
 
 // Equal returns whether two sets are equal to one another, i.e. they are exactly
@@ -190,6 +191,15 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Intersection returns a set containing all the items present in all the input sets, without duplicates.
 func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
+	if sets == nil {
+		return New[T]()
+	}
+
+	if len(sets) == 1 {
+		// Just return the input set as there is nothing to intersect with
+		return sets[0]
+	}
+
 	intersection := New[T]()
 
 	n := len(sets) // Number of sets we've been passed
@@ -197,6 +207,13 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	var smallest *Set[T]
 	minSize := math.MaxInt
 	for _, set := range sets {
+		// If any set is empty, we can immediately return the empty set because
+		// no matter what the other sets contain, anything intersection empty set
+		// should return the empty set
+		if set.IsEmpty() {
+			return New[T]()
+		}
+
 		if len(set.container) < minSize {
 			smallest = set
 			minSize = len(set.container)
@@ -225,6 +242,14 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Difference returns a set containing the items present in set that are not contained in any of the others.
 func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
+	if set == nil || others == nil {
+		return New[T]()
+	}
+
+	if set.IsEmpty() {
+		return New[T]()
+	}
+
 	difference := New[T]()
 
 	n := len(others)
