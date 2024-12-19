@@ -130,7 +130,8 @@ func TestContains(t *testing.T) {
 }
 
 func TestItems(t *testing.T) {
-	m := orderedmap.New[string, int]()
+	// Let's use WithCapacity
+	m := orderedmap.WithCapacity[string, int](4)
 	m.Insert("one", 1)
 	m.Insert("two", 2)
 	m.Insert("three", 3)
