@@ -23,7 +23,7 @@ func New[T any]() *Stack[T] {
 // WithCapacity constructs and returns a new stack with the given capacity.
 //
 // This can be a useful performance improvement when the expected maximum size of the stack is
-// known ahead of time as it eliminates the need for reallocation and stack growth.
+// known ahead of time as it eliminates the need for reallocation.
 func WithCapacity[T any](capacity int) *Stack[T] {
 	return &Stack[T]{container: make([]T, 0, capacity)}
 }
