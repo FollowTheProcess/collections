@@ -24,7 +24,7 @@ func New[T any]() *Queue[T] {
 
 // WithCapacity constructs and returns a new Queue with the given capacity.
 //
-// This can be a useful performance improvment when the expected maximum size of the queue is
+// This can be a useful performance improvement when the expected maximum size of the queue is
 // known ahead of time as it eliminates the need for reallocation.
 func WithCapacity[T any](capacity int) *Queue[T] {
 	return &Queue[T]{container: make([]T, 0, capacity)}
