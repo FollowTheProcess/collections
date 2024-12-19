@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"iter"
 	"math"
-	"slices"
 )
 
 // Set is a simple, generic implementation of a mathematical set.
@@ -30,11 +29,21 @@ func New[T comparable]() *Set[T] {
 	}
 }
 
+// WithCapacity builds and returns a new [Set] with the given capacity.
+//
+// This can be a useful performance improvement when the expected maximum size of the set
+// is known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[T comparable](capacity int) *Set[T] {
+	return &Set[T]{
+		container: make(map[T]struct{}, capacity),
+	}
+}
+
 // From builds a [Set] from an existing slice of items.
 //
 // The set will be preallocated the size of len(items).
 func From[T comparable](items []T) *Set[T] {
-	set := &Set[T]{container: make(map[T]struct{}, len(items))}
+	set := WithCapacity[T](len(items))
 	for _, item := range items {
 		// Note: intentionally not using Insert here as we don't need
 		// the checks it provides
@@ -102,7 +111,12 @@ func (s *Set[T]) Remove(item T) bool {
 	return true
 }
 
-// Size returns the current size of the set.
+// Size returns the number of items currently in the set.
+//
+//	s := set.New[int]()
+//	s.Insert(1)
+//	s.Insert(2)
+//	s.Size() // 2
 func (s *Set[T]) Size() int {
 	return len(s.container)
 }
@@ -129,7 +143,7 @@ func (s *Set[T]) Empty() bool {
 // String implements [fmt.Stringer] for a [Set] and allows
 // it to print itself.
 func (s *Set[T]) String() string {
-	return fmt.Sprintf("%v", slices.Collect(s.Items()))
+	return fmt.Sprintf("%v", s.container)
 }
 
 // Union returns a set that is the combination of all the input sets, i.e. all

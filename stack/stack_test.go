@@ -62,7 +62,7 @@ func TestNotNew(t *testing.T) {
 	test.Equal(t, first, 2)
 }
 
-func TestLength(t *testing.T) {
+func TestSize(t *testing.T) {
 	s := stack.New[string]()
 	s.Push("hello")
 	s.Push("there")
@@ -70,6 +70,11 @@ func TestLength(t *testing.T) {
 	s.Push("kenobi")
 
 	test.Equal(t, s.Size(), 4)
+}
+
+func TestCapacity(t *testing.T) {
+	s := stack.WithCapacity[int](10)
+	test.Equal(t, s.Capacity(), 10)
 }
 
 func TestItems(t *testing.T) {
