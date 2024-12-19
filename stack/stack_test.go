@@ -11,7 +11,7 @@ import (
 func TestIsEmpty(t *testing.T) {
 	s := stack.New[string]()
 
-	if !s.Empty() {
+	if !s.IsEmpty() {
 		t.Error("IsEmpty should return true")
 	}
 
@@ -20,7 +20,7 @@ func TestIsEmpty(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	test.False(t, s.Empty()) // Empty should not be false
+	test.False(t, s.IsEmpty()) // Empty should not be false
 }
 
 func TestPop(t *testing.T) {

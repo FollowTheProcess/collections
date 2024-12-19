@@ -109,8 +109,8 @@ func (q *Queue[T]) Size() int {
 	return len(q.container)
 }
 
-// Empty returns whether the queue is empty.
-func (q *Queue[T]) Empty() bool {
+// IsEmpty returns whether the queue is empty.
+func (q *Queue[T]) IsEmpty() bool {
 	return len(q.container) == 0
 }
 

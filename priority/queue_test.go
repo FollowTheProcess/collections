@@ -9,8 +9,8 @@ import (
 
 func TestNew(t *testing.T) {
 	q := priority.New[string]()
-	test.Equal(t, q.Size(), 0)     // Initial size should be empty
-	test.Equal(t, q.Empty(), true) // Should be empty
+	test.Equal(t, q.Size(), 0)       // Initial size should be empty
+	test.Equal(t, q.IsEmpty(), true) // Should be empty
 
 	item, err := q.Pop()
 	test.Err(t, err) // Pop from empty queue
@@ -69,16 +69,16 @@ func TestFromFunc(t *testing.T) {
 
 func TestSize(t *testing.T) {
 	q := priority.New[string]()
-	test.Equal(t, q.Size(), 0)     // Initial size should be empty
-	test.Equal(t, q.Empty(), true) // Should be empty
+	test.Equal(t, q.Size(), 0)       // Initial size should be empty
+	test.Equal(t, q.IsEmpty(), true) // Should be empty
 
 	q.Push("one", 1)
 	q.Push("two", 2)
 	q.Push("three", 3)
 	q.Push("four", 4)
 
-	test.Equal(t, q.Size(), 4)      // Wrong size after push
-	test.Equal(t, q.Empty(), false) // Should not be empty
+	test.Equal(t, q.Size(), 4)        // Wrong size after push
+	test.Equal(t, q.IsEmpty(), false) // Should not be empty
 }
 
 func TestPushPop(t *testing.T) {

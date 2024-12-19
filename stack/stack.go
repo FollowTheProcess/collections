@@ -104,13 +104,13 @@ func (s *Stack[T]) Capacity() int {
 	return cap(s.container)
 }
 
-// Empty returns whether or not the stack is empty.
+// IsEmpty returns whether or not the stack is empty.
 //
 //	s := stack.New[string]()
-//	s.Empty() // true
+//	s.IsEmpty() // true
 //	s.Push("hello")
-//	s.Empty() // false
-func (s *Stack[T]) Empty() bool {
+//	s.IsEmpty() // false
+func (s *Stack[T]) IsEmpty() bool {
 	return len(s.container) == 0
 }
 

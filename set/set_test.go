@@ -14,7 +14,7 @@ func TestInsert(t *testing.T) {
 	t.Run("strings", func(t *testing.T) {
 		s := set.New[string]()
 
-		test.True(t, s.Empty()) // Initial set was not empty
+		test.True(t, s.IsEmpty()) // Initial set was not empty
 
 		test.True(t, s.Insert("foo"))    // Inserting foo for the first time should return true
 		test.False(t, s.Insert("foo"))   // Second insert of foo should return false
