@@ -185,7 +185,7 @@ func isInPossibleSolutions[T comparable](result []T, possibles [][]T) bool {
 // makeGraph makes a simple DAG with a few connections for things like benchmarks.
 func makeGraph(tb testing.TB) *dag.Graph[string, int] {
 	tb.Helper()
-	graph := dag.New[string, int]()
+	graph := dag.WithCapacity[string, int](5)
 
 	test.Ok(tb, graph.AddVertex("one", 1))
 	test.Ok(tb, graph.AddVertex("two", 2))
