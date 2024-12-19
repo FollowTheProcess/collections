@@ -10,14 +10,14 @@ import (
 
 func TestIsEmpty(t *testing.T) {
 	q := queue.New[string]()
-	test.True(t, q.Empty())
+	test.True(t, q.IsEmpty())
 
 	q.Push("hello")
 	q.Push("there")
 	q.Push("general")
 	q.Push("kenobi")
 
-	test.False(t, q.Empty())
+	test.False(t, q.IsEmpty())
 }
 
 func TestSize(t *testing.T) {

@@ -157,12 +157,12 @@ func (g *Graph[K, T]) Sort() ([]T, error) {
 
 	// If there is not at least 1 vertex with 0 in-degree, then it's not
 	// a DAG and cannot be sorted
-	if zeroInDegreeQueue.Empty() {
+	if zeroInDegreeQueue.IsEmpty() {
 		return nil, fmt.Errorf("graph contains a cycle and cannot be sorted")
 	}
 
 	// While queue is not empty
-	for !zeroInDegreeQueue.Empty() {
+	for !zeroInDegreeQueue.IsEmpty() {
 		vert, _ := zeroInDegreeQueue.Pop() //nolint: errcheck // Only error is pop from empty queue
 
 		// Add its item to the result slice

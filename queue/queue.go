@@ -104,13 +104,13 @@ func (q *Queue[T]) Capacity() int {
 	return cap(q.container)
 }
 
-// Empty returns whether or not the queue is empty.
+// IsEmpty returns whether or not the queue is empty.
 //
 //	s := queue.New[string]()
-//	s.Empty() // true
+//	s.IsEmpty() // true
 //	s.Push("hello")
-//	s.Empty() // false
-func (q *Queue[T]) Empty() bool {
+//	s.IsEmpty() // false
+func (q *Queue[T]) IsEmpty() bool {
 	return len(q.container) == 0
 }
 

@@ -137,8 +137,13 @@ func (s *Set[T]) Items() iter.Seq[T] {
 	}
 }
 
-// Empty reports whether the set is empty.
-func (s *Set[T]) Empty() bool {
+// IsEmpty reports whether the set is empty.
+//
+//	s := set.New[int]()
+//	s.IsEmpty() // true
+//	s.Insert(42)
+//	s.IsEmpty() // false
+func (s *Set[T]) IsEmpty() bool {
 	return len(s.container) == 0
 }
 
