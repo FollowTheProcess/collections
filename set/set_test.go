@@ -120,42 +120,102 @@ func TestCollect(t *testing.T) {
 	test.EqualFunc(t, got, items, slices.Equal)
 }
 
-func TestUnion(t *testing.T) {
-	this := set.New[string]()
-	that := set.New[string]()
-	another := set.New[string]()
-
-	this.Insert("hello")
-	this.Insert("there")
-	this.Insert("general")
-	this.Insert("kenobi")
-
-	that.Insert("hello")
-	that.Insert("to")
-	that.Insert("you")
-	that.Insert("too")
-
-	another.Insert("hello")
-	another.Insert("again")
-	another.Insert("from")
-	another.Insert("another")
-
-	union := slices.Sorted(set.Union(this, that, another).Items())
-
-	want := []string{
-		"again",
-		"another",
-		"from",
-		"general",
-		"hello",
-		"kenobi",
-		"there",
-		"to",
-		"too",
-		"you",
+func TestEqual(t *testing.T) {
+	tests := []struct {
+		a, b *set.Set[string] // Sets the compare
+		name string           // Name of the test case
+		want bool             // Whether they should be considered equal
+	}{
+		{
+			name: "nil",
+			a:    nil,
+			b:    nil,
+			want: false,
+		},
+		{
+			name: "empty",
+			a:    set.New[string](),
+			b:    set.New[string](),
+			want: true,
+		},
+		{
+			name: "equal",
+			a:    set.From([]string{"hello", "there"}),
+			b:    set.From([]string{"there", "hello"}),
+			want: true,
+		},
+		{
+			name: "not equal same length",
+			a:    set.From([]string{"hello", "there"}),
+			b:    set.From([]string{"goodbye", "yes"}),
+			want: false,
+		},
+		{
+			name: "not equal different length",
+			a:    set.From([]string{"hello", "there"}),
+			b:    set.From([]string{"goodbye", "yes", "more", "things"}),
+			want: false,
+		},
 	}
 
-	test.EqualFunc(t, union, want, slices.Equal)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.Equal(t, set.Equal(tt.a, tt.b), tt.want)
+		})
+	}
+}
+
+func TestUnion(t *testing.T) {
+	tests := []struct {
+		want *set.Set[string]   // The expected union set
+		name string             // The name of the test case
+		sets []*set.Set[string] // The sets to pass to Union
+	}{
+		{
+			name: "nil",
+			sets: nil,
+			want: set.New[string](),
+		},
+		{
+			name: "both empty",
+			sets: []*set.Set[string]{set.New[string]()},
+			want: set.New[string](),
+		},
+		{
+			name: "one empty",
+			sets: []*set.Set[string]{
+				set.New[string](),
+				set.From([]string{"hello", "there"}),
+			},
+			want: set.From([]string{"hello", "there"}),
+		},
+		{
+			name: "three full",
+			sets: []*set.Set[string]{
+				set.From([]string{"hello", "there", "general", "kenobi"}),
+				set.From([]string{"hello", "to", "you", "too"}),
+				set.From([]string{"hello", "again", "from", "another"}),
+			},
+			want: set.From([]string{
+				"again",
+				"another",
+				"from",
+				"general",
+				"hello",
+				"kenobi",
+				"there",
+				"to",
+				"too",
+				"you",
+			}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.EqualFunc(t, set.Union(tt.sets...), tt.want, set.Equal)
+		})
+	}
 }
 
 func TestIntersection(t *testing.T) {

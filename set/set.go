@@ -154,6 +154,26 @@ func (s *Set[T]) String() string {
 	return fmt.Sprintf("%v", s.container)
 }
 
+// Equal returns whether two sets are equal to one another, i.e. they are exactly
+// the same size and contain exactly the same elements.
+func Equal[T comparable](a, b *Set[T]) bool {
+	if a == nil || b == nil {
+		return false
+	}
+
+	if len(a.container) != len(b.container) {
+		return false
+	}
+
+	for item := range a.container {
+		if _, ok := b.container[item]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
 // Union returns a set that is the combination of all the input sets, i.e. all
 // the items from all the sets in one new set, without duplicates.
 func Union[T comparable](sets ...*Set[T]) *Set[T] {
@@ -231,7 +251,7 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 // IsDisjoint returns whether the sets have no items in common with one another.
 //
 // It is equivalent to checking for the empty intersection but is significantly faster
-// than calling [Intersection] because it does not construct the result set.
+// than calling [Intersection] because it does not construct the result set and does no allocation.
 func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 	// Easy to handle early and guards against indexing later
 	if len(sets) == 0 {
