@@ -11,15 +11,21 @@ import (
 )
 
 // Stack is a LIFO stack generic over any type.
-//
-// A Stack should be instantiated by the New function and not directly.
 type Stack[T any] struct {
-	container []T // Underlying slice
+	container []T
 }
 
 // New constructs and returns a new stack.
 func New[T any]() *Stack[T] {
-	return &Stack[T]{}
+	return &Stack[T]{container: make([]T, 0)}
+}
+
+// WithCapacity constructs and returns a new stack with the given capacity.
+//
+// This can be a useful performance improvement when the expected maximum size of the stack is
+// known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[T any](capacity int) *Stack[T] {
+	return &Stack[T]{container: make([]T, 0, capacity)}
 }
 
 // From builds a [Stack] from an existing slice of items, pushing items
@@ -27,7 +33,7 @@ func New[T any]() *Stack[T] {
 //
 // The stack will be preallocated the size of len(items).
 func From[T any](items []T) *Stack[T] {
-	stack := &Stack[T]{container: make([]T, 0, len(items))}
+	stack := WithCapacity[T](len(items))
 	for _, item := range items {
 		stack.Push(item)
 	}
@@ -87,6 +93,17 @@ func (s *Stack[T]) Size() int {
 	return len(s.container)
 }
 
+// Capacity returns the capacity of the stack, i.e. the number of items
+// it can contain without the need for reallocation.
+//
+// Use [WithCapacity] to create a stack of a given capacity.
+//
+//	s := stack.WithCapacity[string](10)
+//	s.Capacity() // 10
+func (s *Stack[T]) Capacity() int {
+	return cap(s.container)
+}
+
 // Empty returns whether or not the stack is empty.
 //
 //	s := stack.New[string]()
@@ -113,7 +130,7 @@ func (s *Stack[T]) Items() iter.Seq[T] {
 	}
 }
 
-// String satisfies the [fmt.Stringer] interface and allows a stack to be printed.
+// String satisfies the [fmt.Stringer] interface and allows a stack to print itself.
 func (s *Stack[T]) String() string {
 	return fmt.Sprintf("%v", s.container)
 }

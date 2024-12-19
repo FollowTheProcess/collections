@@ -23,7 +23,15 @@ type Queue[T any] struct {
 // consider using [From] or [FromFunc] as they are more performant than constructing
 // and empty queue and filling it in a loop.
 func New[T any]() *Queue[T] {
-	return &Queue[T]{}
+	return &Queue[T]{container: make([]Element[T], 0)}
+}
+
+// WithCapacity constructs and returns a new priority Queue with the given capacity.
+//
+// This can be a useful performance improvement when the expected maximum size of the queue is
+// known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[T any](capacity int) *Queue[T] {
+	return &Queue[T]{container: make([]Element[T], 0, capacity)}
 }
 
 // From builds and returns a priority Queue from an already established []Element.
@@ -31,14 +39,7 @@ func New[T any]() *Queue[T] {
 // This is more performant than creating a new empty Queue and using Push, but requires
 // the caller to construct the slice of Element themselves.
 func From[T any](elements []Element[T]) *Queue[T] {
-	queue := &Queue[T]{
-		container: make(
-			[]Element[T],
-			0,
-			len(elements),
-		), // Create a new slice so we own the data internally
-	}
-
+	queue := WithCapacity[T](len(elements))
 	queue.container = append(queue.container, elements...)
 
 	// Heapify the container

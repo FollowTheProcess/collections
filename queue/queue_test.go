@@ -20,7 +20,7 @@ func TestIsEmpty(t *testing.T) {
 	test.False(t, q.Empty())
 }
 
-func TestLength(t *testing.T) {
+func TestSize(t *testing.T) {
 	q := queue.New[string]()
 	q.Push("hello")
 	q.Push("there")
@@ -28,6 +28,11 @@ func TestLength(t *testing.T) {
 	q.Push("kenobi")
 
 	test.Equal(t, q.Size(), 4)
+}
+
+func TestCapacity(t *testing.T) {
+	q := queue.WithCapacity[int](10)
+	test.Equal(t, q.Capacity(), 10)
 }
 
 func TestPop(t *testing.T) {

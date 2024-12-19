@@ -55,6 +55,16 @@ func New[K comparable, T any]() *Graph[K, T] {
 	}
 }
 
+// WithCapacity creates and returns a new [Graph] with the given capacity.
+//
+// This can be a useful performance improvement if the expected maximum number of elements
+// the graph will hold is known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[K comparable, T any](capacity int) *Graph[K, T] {
+	return &Graph[K, T]{
+		vertices: make(map[K]*vertex[T], capacity),
+	}
+}
+
 // Order returns the number of vertices in the graph.
 func (g *Graph[K, T]) Order() int {
 	return len(g.vertices)

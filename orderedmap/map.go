@@ -29,6 +29,17 @@ func New[K comparable, V any]() *Map[K, V] {
 	}
 }
 
+// WithCapacity creates and returns a new ordered [Map] with the given capacity.
+//
+// This can be a useful performance improvement when the expected maximum size of the map
+// is known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[K comparable, V any](capacity int) *Map[K, V] {
+	return &Map[K, V]{
+		inner: make(map[K]*entry[K, V], capacity),
+		list:  list.New[*entry[K, V]](),
+	}
+}
+
 // Get returns the value stored against the given key in the map and a boolean
 // to indicate presence, like the standard Go map.
 //

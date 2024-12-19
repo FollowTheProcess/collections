@@ -19,7 +19,15 @@ type Queue[T any] struct {
 
 // New constructs and returns a new Queue.
 func New[T any]() *Queue[T] {
-	return &Queue[T]{}
+	return &Queue[T]{container: make([]T, 0)}
+}
+
+// WithCapacity constructs and returns a new Queue with the given capacity.
+//
+// This can be a useful performance improvement when the expected maximum size of the queue is
+// known ahead of time as it eliminates the need for reallocation.
+func WithCapacity[T any](capacity int) *Queue[T] {
+	return &Queue[T]{container: make([]T, 0, capacity)}
 }
 
 // From builds a [Queue] from an existing slice of items, pushing items
@@ -27,7 +35,7 @@ func New[T any]() *Queue[T] {
 //
 // The queue will be preallocated the size of len(items).
 func From[T any](items []T) *Queue[T] {
-	queue := &Queue[T]{container: make([]T, 0, len(items))}
+	queue := WithCapacity[T](len(items))
 	for _, item := range items {
 		queue.Push(item)
 	}
@@ -83,6 +91,17 @@ func (q *Queue[T]) Pop() (T, error) {
 //	s.Size() // 2
 func (q *Queue[T]) Size() int {
 	return len(q.container)
+}
+
+// Capacity returns the capacity of the queue, i.e. the number of items
+// it can contain without the need for reallocation.
+//
+// Use [WithCapacity] to create a queue of a given capacity.
+//
+//	q := queue.WithCapacity[string](10)
+//	q.Capacity() // 10
+func (q *Queue[T]) Capacity() int {
+	return cap(q.container)
 }
 
 // Empty returns whether or not the queue is empty.
