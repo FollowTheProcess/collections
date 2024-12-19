@@ -101,7 +101,7 @@ func TestAddEdge(t *testing.T) {
 
 func TestSort(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		graph := dag.New[string, int]()
+		graph := dag.WithCapacity[string, int](5)
 
 		test.Ok(t, graph.AddVertex("one", 1))
 		test.Ok(t, graph.AddVertex("two", 2))
