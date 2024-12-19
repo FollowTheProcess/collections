@@ -157,6 +157,8 @@ func (s *Set[T]) String() string {
 
 // Equal returns whether two sets are equal to one another, i.e. they are exactly
 // the same size and contain exactly the same elements.
+//
+// If either of the two sets are nil, Equal returns false.
 func Equal[T comparable](a, b *Set[T]) bool {
 	if a == nil || b == nil {
 		return false
@@ -298,13 +300,13 @@ func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 
 	smallest := sets[smallestIndex]
 
-	// Remove the smallest one so we're left with a list of "others"
-	// otherwise disjoint will always be false as the smallest set
-	// will, by definition, include the value and will be included in sets
-	sets = slices.Delete(sets, smallestIndex, smallestIndex+1)
-
 	for item := range smallest.container {
-		for _, other := range sets {
+		for index, other := range sets {
+			// Skip over the smallest one because there's no point comparing
+			// against itself
+			if index == smallestIndex {
+				continue
+			}
 			if other.Contains(item) {
 				return false
 			}
