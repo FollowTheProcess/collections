@@ -180,7 +180,24 @@ func Equal[T comparable](a, b *Set[T]) bool {
 // Union returns a set that is the combination of all the input sets, i.e. all
 // the items from all the sets in one new set, without duplicates.
 func Union[T comparable](sets ...*Set[T]) *Set[T] {
-	union := New[T]()
+	if len(sets) == 0 {
+		return New[T]()
+	}
+	if len(sets) == 1 {
+		return sets[0]
+	}
+
+	// From benchmarking it is actually slightly faster to iterate through the sets twice in order
+	// to calculate (and then allocate) the exact required capacity. My guess is this is due to
+	// the number of sets usually being quite low (as they are passed in as args), compared to their
+	// size. Doing this we cut allocations in BenchmarkUnion by over 95% which saves the time cost
+	// of iterating twice, and a bit extra
+	requiredCapacity := 0
+	for _, set := range sets {
+		requiredCapacity += len(set.container)
+	}
+
+	union := WithCapacity[T](requiredCapacity)
 	for _, set := range sets {
 		for item := range set.container {
 			// Don't need the additional checks of Insert
