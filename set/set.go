@@ -292,32 +292,24 @@ func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
 		return a
 	}
 
+	result := New[T]()
+
 	// Simplified version of Difference for performance optimisation
-	uniqueToA := New[T]()
+	// add all the items unique to a
 	for item := range a.container {
 		if !b.Contains(item) {
-			uniqueToA.container[item] = struct{}{}
+			result.container[item] = struct{}{}
 		}
 	}
 
-	uniqueToB := New[T]()
+	// and all the items unique to b
 	for item := range b.container {
 		if !a.Contains(item) {
-			uniqueToB.container[item] = struct{}{}
+			result.container[item] = struct{}{}
 		}
 	}
 
-	union := WithCapacity[T](uniqueToA.Size() + uniqueToB.Size()) // Preallocate the required size
-
-	for item := range uniqueToA.container {
-		union.container[item] = struct{}{}
-	}
-
-	for item := range uniqueToB.container {
-		union.container[item] = struct{}{}
-	}
-
-	return union
+	return result
 }
 
 // IsDisjoint returns whether the sets have no items in common with one another.
