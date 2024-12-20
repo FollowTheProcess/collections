@@ -402,6 +402,153 @@ func TestIsDisjoint(t *testing.T) {
 	}
 }
 
+func TestIsSubset(t *testing.T) {
+	tests := []struct {
+		a, b *set.Set[string] // The sets to compare
+		name string           // Name of the test case
+		want bool             // Expected answer
+	}{
+		{
+			name: "nil",
+			a:    nil,
+			b:    nil,
+			want: false,
+		},
+		{
+			name: "both empty",
+			a:    set.New[string](),
+			b:    set.New[string](),
+			want: false,
+		},
+		{
+			name: "a empty",
+			a:    set.New[string](),
+			b:    set.From([]string{"one", "two", "three"}),
+			want: false,
+		},
+		{
+			name: "b empty",
+			a:    set.From([]string{"one", "two", "three"}),
+			b:    set.New[string](),
+			want: false,
+		},
+		{
+			name: "valid subset",
+			a:    set.From([]string{"one", "two", "three"}),
+			b:    set.From([]string{"four", "two", "five", "one", "three"}),
+			want: true,
+		},
+		{
+			name: "not a subset",
+			a:    set.From([]string{"one", "two", "three"}),
+			b:    set.From([]string{"four", "two", "five", "one"}), // Missing "three"
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.Equal(t, set.IsSubset(tt.a, tt.b), tt.want)
+		})
+	}
+}
+
+func TestIsSuperset(t *testing.T) {
+	tests := []struct {
+		a, b *set.Set[string] // The sets to compare
+		name string           // Name of the test case
+		want bool             // Expected answer
+	}{
+		{
+			name: "nil",
+			a:    nil,
+			b:    nil,
+			want: false,
+		},
+		{
+			name: "both empty",
+			a:    set.New[string](),
+			b:    set.New[string](),
+			want: false,
+		},
+		{
+			name: "a empty",
+			a:    set.New[string](),
+			b:    set.From([]string{"one", "two", "three"}),
+			want: false,
+		},
+		{
+			name: "b empty",
+			a:    set.From([]string{"one", "two", "three"}),
+			b:    set.New[string](),
+			want: false,
+		},
+		{
+			name: "not a superset",
+			a:    set.From([]string{"one", "two"}),
+			b:    set.From([]string{"zero", "one"}),
+			want: false,
+		},
+		{
+			name: "valid superset",
+			a:    set.From([]string{"zero", "one", "two"}),
+			b:    set.From([]string{"one", "two"}),
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.Equal(t, set.IsSuperset(tt.a, tt.b), tt.want)
+		})
+	}
+}
+
+func TestSymmetricDifference(t *testing.T) {
+	tests := []struct {
+		a, b *set.Set[string] // The sets to compare
+		want *set.Set[string] // Expected answer
+		name string           // Name of the test case
+	}{
+		{
+			name: "nil",
+			a:    nil,
+			b:    nil,
+			want: set.New[string](),
+		},
+		{
+			name: "a empty",
+			a:    set.New[string](),
+			b:    set.From([]string{"some", "stuff", "here"}),
+			want: set.From([]string{"some", "stuff", "here"}),
+		},
+		{
+			name: "b empty",
+			a:    set.From([]string{"some", "stuff", "here"}),
+			b:    set.New[string](),
+			want: set.From([]string{"some", "stuff", "here"}),
+		},
+		{
+			name: "both empty",
+			a:    set.New[string](),
+			b:    set.New[string](),
+			want: set.New[string](),
+		},
+		{
+			name: "actual difference",
+			a:    set.From([]string{"one", "two", "three", "four"}),
+			b:    set.From([]string{"two", "three", "four", "five"}),
+			want: set.From([]string{"one", "five"}), // "one" is only in a and "five" is only in b
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.EqualFunc(t, set.SymmetricDifference(tt.a, tt.b), tt.want, set.Equal)
+		})
+	}
+}
+
 func TestString(t *testing.T) {
 	s := set.New[string]()
 
@@ -543,5 +690,35 @@ func BenchmarkIsDisjoint(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		set.IsDisjoint(s1, s2)
+	}
+}
+
+func BenchmarkIsSubset(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		set.IsSubset(s1, s2)
+	}
+}
+
+func BenchmarkSymmetricDifference(b *testing.B) {
+	s1 := set.New[int]()
+	s2 := set.New[int]()
+
+	for i := 0; i < 1000; i++ {
+		s1.Insert(i)
+		s2.Insert(i + 500)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		set.SymmetricDifference(s1, s2)
 	}
 }
