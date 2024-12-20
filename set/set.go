@@ -12,7 +12,7 @@ import (
 	"slices"
 )
 
-// TODO(@FollowTheProcess): IsDisjoint, IsSubset, IsSuperSet, SymmetricDifference
+// TODO(@FollowTheProcess): SymmetricDifference
 
 // Set is a simple, generic implementation of a mathematical set.
 type Set[T comparable] struct {
@@ -275,6 +275,29 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 	return difference
 }
 
+// SymmetricDifference returns a set containing the items that are in a or in b, but not both.
+//
+// If a or b is nil, an empty set is returned. If a is an empty set, b is returned, and if b
+// is an empty set, a is returned.
+func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
+	if a == nil || b == nil {
+		return New[T]()
+	}
+	// Symmetric difference with an empty set is itself
+	if a.IsEmpty() {
+		return b
+	}
+
+	if b.IsEmpty() {
+		return a
+	}
+
+	uniqueToA := Difference(a, b)
+	uniqueToB := Difference(b, a)
+
+	return Union(uniqueToA, uniqueToB)
+}
+
 // IsDisjoint returns whether the sets have no items in common with one another.
 //
 // It is equivalent to checking for the empty intersection but is significantly faster
@@ -314,4 +337,30 @@ func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 	}
 
 	return true
+}
+
+// IsSubset returns whether a is a subset of b i.e. does b contain at least
+// all the items from a.
+func IsSubset[T comparable](a, b *Set[T]) bool {
+	if a == nil || b == nil {
+		return false
+	}
+
+	if a.IsEmpty() || b.IsEmpty() {
+		return false
+	}
+
+	for item := range a.container {
+		if !b.Contains(item) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// IsSuperset returns whether a is a superset of b i.e. does a contain at least all
+// the items from b.
+func IsSuperset[T comparable](a, b *Set[T]) bool {
+	return IsSubset(b, a)
 }
