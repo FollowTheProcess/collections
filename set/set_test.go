@@ -491,15 +491,15 @@ func TestIsSuperset(t *testing.T) {
 		},
 		{
 			name: "valid superset",
-			a:    set.From([]string{"one", "two"}),
-			b:    set.From([]string{"zero", "one", "two"}),
+			a:    set.From([]string{"zero", "one", "two"}),
+			b:    set.From([]string{"one", "two"}),
 			want: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.Equal(t, set.IsSubset(tt.a, tt.b), tt.want)
+			test.Equal(t, set.IsSuperset(tt.a, tt.b), tt.want)
 		})
 	}
 }
