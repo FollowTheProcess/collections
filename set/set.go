@@ -292,10 +292,35 @@ func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
 		return a
 	}
 
-	uniqueToA := Difference(a, b)
-	uniqueToB := Difference(b, a)
+	// Good balanced approximation for the maximum size of the symmetric difference, if we
+	// allocate enough space for a.Size() + b.Size(), this could explode in the pathological case
+	// and would result in a lot of wasted memory in most normal cases as it would assume each
+	// set is totally unique which is unlikely in the real world.
+	//
+	// Our approximation here is that most real sets contain a mix of unique and non-unique items
+	// and a good guess is that the max of the two sizes should be enough to contain most results
+	// with minimal reallocation.
+	//
+	// This was backed up with benchmarking when I wrote this, without this optimisation we had many
+	// more allocations and it was significantly slower, and a.Size() + b.Size() didn't materially
+	// drop it further, so the below represents what I think is a good compromise of time vs space
+	result := WithCapacity[T](max(a.Size(), b.Size()))
 
-	return Union(uniqueToA, uniqueToB)
+	// add all the items unique to a
+	for item := range a.container {
+		if !b.Contains(item) {
+			result.container[item] = struct{}{}
+		}
+	}
+
+	// and all the items unique to b
+	for item := range b.container {
+		if !a.Contains(item) {
+			result.container[item] = struct{}{}
+		}
+	}
+
+	return result
 }
 
 // IsDisjoint returns whether the sets have no items in common with one another.
