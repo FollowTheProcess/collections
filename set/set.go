@@ -295,7 +295,17 @@ func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
 	uniqueToA := Difference(a, b)
 	uniqueToB := Difference(b, a)
 
-	return Union(uniqueToA, uniqueToB)
+	union := WithCapacity[T](a.Size() + b.Size()) // Preallocate the required size
+
+	for item := range uniqueToA.container {
+		union.container[item] = struct{}{}
+	}
+
+	for item := range uniqueToB.container {
+		union.container[item] = struct{}{}
+	}
+
+	return union
 }
 
 // IsDisjoint returns whether the sets have no items in common with one another.
