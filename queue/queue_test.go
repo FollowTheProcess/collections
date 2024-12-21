@@ -133,11 +133,8 @@ func TestNotNew(t *testing.T) {
 func BenchmarkQueue(b *testing.B) {
 	s := queue.New[int]()
 
-	for i := 0; i < b.N; i++ {
-		s.Push(i)
-	}
-
-	for i := 0; i < b.N; i++ {
+	for range b.N {
+		s.Push(1)
 		_, err := s.Pop()
 		if err != nil {
 			b.Errorf("Pop() returned an error: %v", err)

@@ -12,8 +12,6 @@ import (
 	"slices"
 )
 
-// TODO(@FollowTheProcess): SymmetricDifference
-
 // Set is a simple, generic implementation of a mathematical set.
 type Set[T comparable] struct {
 	container map[T]struct{}

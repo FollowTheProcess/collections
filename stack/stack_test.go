@@ -137,11 +137,8 @@ func TestCollect(t *testing.T) {
 func BenchmarkStack(b *testing.B) {
 	s := stack.New[int]()
 
-	for i := 0; i < b.N; i++ {
-		s.Push(i)
-	}
-
-	for i := 0; i < b.N; i++ {
+	for range b.N {
+		s.Push(1)
 		_, err := s.Pop()
 		if err != nil {
 			b.Errorf("Pop() returned an error: %v", err)
