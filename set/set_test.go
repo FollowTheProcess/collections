@@ -624,6 +624,18 @@ func ExampleDifference() {
 	// Output: [there]
 }
 
+func ExampleSymmetricDifference() {
+	this := set.From([]int{1, 2, 3, 4})
+	that := set.From([]int{2, 3, 4, 5})
+
+	// Symmetric difference is the items that are in "this" or "that"
+	// but not both
+	difference := slices.Sorted(set.SymmetricDifference(this, that).Items())
+
+	fmt.Println(difference)
+	// Output: [1 5]
+}
+
 func BenchmarkIntersection(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
