@@ -652,11 +652,23 @@ func BenchmarkIntersection(b *testing.B) {
 }
 
 func BenchmarkInsert(b *testing.B) {
+	s := set.New[int]()
 	for range b.N {
-		s := set.New[int]()
-		for j := 0; j < 1000; j++ {
-			s.Insert(j)
-		}
+		s.Insert(b.N)
+	}
+}
+
+func BenchmarkContains(b *testing.B) {
+	s := set.New[int]()
+
+	// So some will be present and others won't
+	for i := range 10000 {
+		s.Insert(i)
+	}
+
+	b.ResetTimer()
+	for range b.N {
+		s.Contains(b.N)
 	}
 }
 
