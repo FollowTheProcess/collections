@@ -123,18 +123,12 @@ func (s *Set[T]) Size() int {
 	return len(s.container)
 }
 
-// Items returns the an iterator over the sets items.
+// All returns the an iterator over the sets items.
 //
 // The order of the items is non-deterministic, the caller should collect
 // and sort the returned items if order is important.
-func (s *Set[T]) Items() iter.Seq[T] {
-	return func(yield func(T) bool) {
-		for item := range s.container {
-			if !yield(item) {
-				return
-			}
-		}
-	}
+func (s *Set[T]) All() iter.Seq[T] {
+	return maps.Keys(s.container)
 }
 
 // IsEmpty reports whether the set is empty.

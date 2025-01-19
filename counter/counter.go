@@ -192,9 +192,9 @@ func (c *Counter[T]) Descending() iter.Seq2[T, int] {
 	}
 }
 
-// Counts returns an iterator over the item, count pairs in the Counter, yielding them
+// All returns an iterator over the item, count pairs in the Counter, yielding them
 // in a non-deterministic order.
-func (c *Counter[T]) Counts() iter.Seq2[T, int] {
+func (c *Counter[T]) All() iter.Seq2[T, int] {
 	return func(yield func(T, int) bool) {
 		for item, count := range c.counts {
 			if !yield(item, count) {

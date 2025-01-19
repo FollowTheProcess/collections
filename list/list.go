@@ -128,8 +128,8 @@ func (l *List[T]) Remove(node *Node[T]) *Node[T] {
 	return l.remove(node)
 }
 
-// Items returns an iterator over the items in the list, in order.
-func (l *List[T]) Items() iter.Seq[T] {
+// All returns an iterator over the items in the list, in order.
+func (l *List[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for elem := l.first; elem != nil; elem = elem.next {
 			if !yield(elem.item) {

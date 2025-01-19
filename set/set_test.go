@@ -106,7 +106,7 @@ func TestItems(t *testing.T) {
 	slices.Sort(items)
 	set := set.From(items)
 
-	got := slices.Sorted(set.Items())
+	got := slices.Sorted(set.All())
 	test.EqualFunc(t, got, items, slices.Equal)
 }
 
@@ -116,7 +116,7 @@ func TestCollect(t *testing.T) {
 
 	set := set.Collect(slices.Values(items))
 
-	got := slices.Sorted(set.Items())
+	got := slices.Sorted(set.All())
 	test.EqualFunc(t, got, items, slices.Equal)
 }
 
@@ -580,7 +580,7 @@ func ExampleUnion() {
 	that.Insert("hello")
 
 	// Get the union in a slice of strings
-	union := slices.Sorted(set.Union(this, that).Items()) // A set is unordered
+	union := slices.Sorted(set.Union(this, that).All()) // A set is unordered
 
 	fmt.Println(union)
 	// Output: [general hello kenobi says there]
@@ -599,7 +599,7 @@ func ExampleIntersection() {
 	that.Insert("hello")
 
 	// Get the items in a slice of strings
-	intersection := slices.Sorted(set.Intersection(this, that).Items())
+	intersection := slices.Sorted(set.Intersection(this, that).All())
 
 	fmt.Println(intersection)
 	// Output: [hello]
@@ -618,7 +618,7 @@ func ExampleDifference() {
 	that.Insert("hello")
 
 	// Get the items in a slice of strings
-	difference := slices.Sorted(set.Difference(this, that).Items())
+	difference := slices.Sorted(set.Difference(this, that).All())
 
 	fmt.Println(difference)
 	// Output: [there]
@@ -630,7 +630,7 @@ func ExampleSymmetricDifference() {
 
 	// Symmetric difference is the items that are in "this" or "that"
 	// but not both
-	difference := slices.Sorted(set.SymmetricDifference(this, that).Items())
+	difference := slices.Sorted(set.SymmetricDifference(this, that).All())
 
 	fmt.Println(difference)
 	// Output: [1 5]

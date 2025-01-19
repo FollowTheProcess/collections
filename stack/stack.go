@@ -114,13 +114,13 @@ func (s *Stack[T]) IsEmpty() bool {
 	return len(s.container) == 0
 }
 
-// Items returns an iterator over the stack in LIFO order.
+// All returns an iterator over the stack in LIFO order.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
 //	s.Push("there")
-//	slices.Collect(s.Items()) // [there hello]
-func (s *Stack[T]) Items() iter.Seq[T] {
+//	slices.Collect(s.All()) // [there hello]
+func (s *Stack[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := len(s.container) - 1; i >= 0; i-- {
 			if !yield(s.container[i]) {

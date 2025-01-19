@@ -137,7 +137,7 @@ func TestItems(t *testing.T) {
 	m.Insert("three", 3)
 	m.Insert("four", 4)
 
-	items := maps.Collect(m.Items())
+	items := maps.Collect(m.All())
 	want := map[string]int{
 		"one":   1,
 		"two":   2,
