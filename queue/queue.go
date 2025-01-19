@@ -74,8 +74,10 @@ func (q *Queue[T]) Pop() (T, error) {
 	l := len(q.container)
 	if l == 0 {
 		var none T
+
 		return none, errors.New("pop from empty queue")
 	}
+
 	item := (q.container)[0]
 	q.container = (q.container)[1:]
 

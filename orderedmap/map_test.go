@@ -177,7 +177,9 @@ func TestValues(t *testing.T) {
 func BenchmarkInsert(b *testing.B) {
 	b.Run("new", func(b *testing.B) {
 		m := orderedmap.New[int, int]()
+
 		b.ResetTimer()
+
 		for i := range b.N {
 			m.Insert(i, i)
 		}
@@ -188,6 +190,7 @@ func BenchmarkInsert(b *testing.B) {
 		m.Insert("hello", 1)
 
 		b.ResetTimer()
+
 		for range b.N {
 			m.Insert("hello", 2) // Update the value stored against "hello"
 		}
@@ -199,6 +202,7 @@ func BenchmarkRemove(b *testing.B) {
 		m := orderedmap.New[string, int]()
 
 		b.ResetTimer()
+
 		for range b.N {
 			// I've tried doing various combinations of b.StopTimer() and stuff but
 			// it doesn't ever seem to work correctly so we just live with including
@@ -212,6 +216,7 @@ func BenchmarkRemove(b *testing.B) {
 		m := orderedmap.New[string, int]()
 
 		b.ResetTimer()
+
 		for range b.N {
 			m.Remove("hello") // Doesn't exist, remove should be a no-op
 		}

@@ -47,6 +47,7 @@ func WithCapacity[K comparable, V any](capacity int) *Map[K, V] {
 // If the key was present, the item and true are returned.
 func (m *Map[K, V]) Get(key K) (value V, ok bool) {
 	var zero V
+
 	val, exists := m.inner[key]
 	if !exists {
 		return zero, false
@@ -60,6 +61,7 @@ func (m *Map[K, V]) Contains(key K) bool {
 	if _, exists := m.inner[key]; exists {
 		return true
 	}
+
 	return false
 }
 
@@ -76,6 +78,7 @@ func (m *Map[K, V]) Insert(key K, value V) (val V, existed bool) {
 		// The item exists, this is therefore an update
 		oldValue := old.value // Take a copy so we can return it
 		old.value = value     // Set the new value back
+
 		return oldValue, true
 	}
 
@@ -100,11 +103,13 @@ func (m *Map[K, V]) Remove(key K) (value V, existed bool) {
 	if entry, existed := m.inner[key]; existed {
 		m.list.Remove(entry.node) // Drop it from our list
 		delete(m.inner, key)      // And the map
+
 		return entry.value, true
 	}
 
 	// Didn't exist, just return
 	var zero V
+
 	return zero, false
 }
 
@@ -118,7 +123,9 @@ func (m *Map[K, V]) Size() int {
 // that was inserted first. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
 	var zeroKey K
+
 	var zeroVal V
+
 	node, err := m.list.First()
 	if err != nil {
 		// Empty list
@@ -132,7 +139,9 @@ func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
 // was inserted last. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
 	var zeroKey K
+
 	var zeroVal V
+
 	node, err := m.list.Last()
 	if err != nil {
 		// Empty list

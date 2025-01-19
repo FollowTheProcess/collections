@@ -1,6 +1,7 @@
 package dag
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/FollowTheProcess/collections/queue"
@@ -89,6 +90,7 @@ func (g *Graph[K, T]) AddVertex(id K, item T) error {
 	}
 
 	g.vertices[id] = newVertex(item)
+
 	return nil
 }
 
@@ -97,6 +99,7 @@ func (g *Graph[K, T]) AddVertex(id K, item T) error {
 // If the vertex does not exist, an error will be returned.
 func (g *Graph[K, T]) GetVertex(id K) (T, error) {
 	var zero T
+
 	vertex, exists := g.vertices[id]
 	if !exists {
 		return zero, fmt.Errorf("vertex with id '%v' not in graph", id)
@@ -108,6 +111,7 @@ func (g *Graph[K, T]) GetVertex(id K) (T, error) {
 // ContainsVertex reports whether a vertex with the given id is present in the graph.
 func (g *Graph[K, T]) ContainsVertex(id K) bool {
 	_, exists := g.vertices[id]
+
 	return exists
 }
 
@@ -132,6 +136,7 @@ func (g *Graph[K, T]) AddEdge(from, to K) error {
 	// Create the connection
 	parent.children.Insert(child)
 	child.parents.Insert(parent)
+
 	g.edges++
 
 	return nil
@@ -158,7 +163,7 @@ func (g *Graph[K, T]) Sort() ([]T, error) {
 	// If there is not at least 1 vertex with 0 in-degree, then it's not
 	// a DAG and cannot be sorted
 	if zeroInDegreeQueue.IsEmpty() {
-		return nil, fmt.Errorf("graph contains a cycle and cannot be sorted")
+		return nil, errors.New("graph contains a cycle and cannot be sorted")
 	}
 
 	// While queue is not empty
