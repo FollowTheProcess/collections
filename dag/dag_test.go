@@ -185,6 +185,7 @@ func isInPossibleSolutions[T comparable](result []T, possibles [][]T) bool {
 // makeGraph makes a simple DAG with a few connections for things like benchmarks.
 func makeGraph(tb testing.TB) *dag.Graph[string, int] {
 	tb.Helper()
+
 	graph := dag.WithCapacity[string, int](5)
 
 	test.Ok(tb, graph.AddVertex("one", 1))
@@ -212,6 +213,7 @@ func BenchmarkGraphSort(b *testing.B) {
 		b.StopTimer()
 		graph := makeGraph(b)
 		b.StartTimer()
+
 		_, err := graph.Sort()
 		if err != nil {
 			b.Fatalf("graph.Sort returned an error: %v", err)

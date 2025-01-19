@@ -51,6 +51,7 @@ func From[T comparable](items []T) *Set[T] {
 		// the checks it provides
 		set.container[item] = struct{}{}
 	}
+
 	return set
 }
 
@@ -87,6 +88,7 @@ func (s *Set[T]) Insert(item T) bool {
 	}
 
 	s.container[item] = struct{}{}
+
 	return true
 }
 
@@ -98,6 +100,7 @@ func (s *Set[T]) Insert(item T) bool {
 //	s.Contains(1) // true
 func (s *Set[T]) Contains(item T) bool {
 	_, exists := s.container[item]
+
 	return exists
 }
 
@@ -109,7 +112,9 @@ func (s *Set[T]) Remove(item T) bool {
 	if _, exists := s.container[item]; !exists {
 		return false
 	}
+
 	delete(s.container, item)
+
 	return true
 }
 
@@ -175,6 +180,7 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	if len(sets) == 0 {
 		return New[T]()
 	}
+
 	if len(sets) == 1 {
 		return sets[0]
 	}
@@ -190,6 +196,7 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 	}
 
 	union := WithCapacity[T](requiredCapacity)
+
 	for _, set := range sets {
 		for item := range set.container {
 			// Don't need the additional checks of Insert
@@ -216,7 +223,9 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 	n := len(sets) // Number of sets we've been passed
 
 	var smallest *Set[T]
+
 	minSize := math.MaxInt
+
 	for _, set := range sets {
 		// If any set is empty, we can immediately return the empty set because
 		// no matter what the other sets contain, anything intersection empty set
@@ -233,6 +242,7 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 
 	for item := range smallest.container {
 		numContains := 0 // The number of sets that contain this item
+
 		for _, other := range sets {
 			if other.Contains(item) {
 				numContains++
@@ -267,6 +277,7 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 
 	for item := range set.container {
 		numNotContains := 0 // The number of sets that do not contain this item
+
 		for _, other := range others {
 			if !other.Contains(item) {
 				numNotContains++
@@ -347,6 +358,7 @@ func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 	}
 
 	var smallestIndex int // The index in sets where the smallest set is located
+
 	minSize := math.MaxInt
 	for index, set := range sets {
 		if len(set.container) < minSize {
@@ -364,6 +376,7 @@ func IsDisjoint[T comparable](sets ...*Set[T]) bool {
 			if index == smallestIndex {
 				continue
 			}
+
 			if other.Contains(item) {
 				return false
 			}

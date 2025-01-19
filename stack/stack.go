@@ -75,8 +75,10 @@ func (s *Stack[T]) Pop() (T, error) {
 	l := len(s.container)
 	if l == 0 {
 		var none T
+
 		return none, errors.New("pop from empty stack")
 	}
+
 	item := s.container[l-1]
 	s.container = s.container[:l-1]
 

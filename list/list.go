@@ -82,6 +82,7 @@ func (l *List[T]) First() (*Node[T], error) {
 	if l.first == nil {
 		return nil, errors.New("First() called on empty list")
 	}
+
 	return l.first, nil
 }
 
@@ -93,6 +94,7 @@ func (l *List[T]) Last() (*Node[T], error) {
 	if l.last == nil {
 		return nil, errors.New("Last() called on empty list")
 	}
+
 	return l.last, nil
 }
 
@@ -109,7 +111,7 @@ func (l *List[T]) Pop() (*Node[T], error) {
 		return nil, errors.New("Pop() called on empty list")
 	}
 
-	return l.remove(l.last), nil
+	return l.Remove(l.last), nil
 }
 
 // PopFirst removes the first node from the list and returns it.
@@ -120,12 +122,34 @@ func (l *List[T]) PopFirst() (*Node[T], error) {
 		return nil, errors.New("PopFirst() called on empty list")
 	}
 
-	return l.remove(l.first), nil
+	return l.Remove(l.first), nil
 }
 
 // Remove removes a [Node] from the list, returning it after removal.
 func (l *List[T]) Remove(node *Node[T]) *Node[T] {
-	return l.remove(node)
+	if node.prev != nil {
+		// Removing from somewhere in the middle of the list
+		node.prev.next = node.next
+	} else {
+		// Removing the first element
+		l.first = node.next
+	}
+
+	if node.next != nil {
+		// Removing from somewhere in the middle of the list
+		node.next.prev = node.prev
+	} else {
+		// Removing the last element
+		l.last = node.prev
+	}
+
+	// Avoid memory leaks
+	node.next = nil
+	node.prev = nil
+
+	l.len--
+
+	return node
 }
 
 // All returns an iterator over the items in the list, in order.
@@ -184,31 +208,4 @@ func (l *List[T]) insertBefore(before, node *Node[T]) {
 
 	before.prev = node
 	l.len++
-}
-
-// remove removes a node from the list, returning the one it just removed.
-func (l *List[T]) remove(node *Node[T]) *Node[T] {
-	if node.prev != nil {
-		// Removing from somewhere in the middle of the list
-		node.prev.next = node.next
-	} else {
-		// Removing the first element
-		l.first = node.next
-	}
-
-	if node.next != nil {
-		// Removing from somewhere in the middle of the list
-		node.next.prev = node.prev
-	} else {
-		// Removing the last element
-		l.last = node.prev
-	}
-
-	// Avoid memory leaks
-	node.next = nil
-	node.prev = nil
-
-	l.len--
-
-	return node
 }

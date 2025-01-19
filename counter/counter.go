@@ -73,12 +73,14 @@ func (c *Counter[T]) Add(item T) int {
 	if !exists {
 		// Not previously seen -> item: 1
 		c.counts[item] = 1
+
 		return 1
 	}
 
 	// Already existed, increment it's count
-	v += 1
+	v++
 	c.counts[item] = v
+
 	return v
 }
 
@@ -90,15 +92,17 @@ func (c *Counter[T]) Add(item T) int {
 // If the item doesn't exist, this is a no-op returning 0.
 func (c *Counter[T]) Sub(item T) int {
 	if v, exists := c.counts[item]; exists {
-		v -= 1
+		v--
 		if v == 0 {
 			// If it's now 0, remove it entirely
 			delete(c.counts, item)
+
 			return 0
 		}
 
 		// Otherwise, store the new value back
 		c.counts[item] = v
+
 		return v
 	}
 
@@ -116,6 +120,7 @@ func (c *Counter[T]) Remove(item T) int {
 	}
 
 	delete(c.counts, item)
+
 	return v
 }
 
@@ -151,10 +156,12 @@ func (c *Counter[T]) Reset() {
 func (c *Counter[T]) MostCommon() (item T, count int) {
 	if len(c.counts) == 0 {
 		var zero T
+
 		return zero, 0
 	}
 
 	var mostCommon T
+
 	highestCount := 0
 	for item, count := range c.counts {
 		if count > highestCount {
@@ -173,6 +180,7 @@ func (c *Counter[T]) Descending() iter.Seq2[T, int] {
 		item  T
 		value int
 	}
+
 	counts := make([]count, 0, len(c.counts))
 	for item, value := range c.counts {
 		counts = append(counts, count{item: item, value: value})

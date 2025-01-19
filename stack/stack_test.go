@@ -139,6 +139,7 @@ func BenchmarkStack(b *testing.B) {
 
 	for range b.N {
 		s.Push(1)
+
 		_, err := s.Pop()
 		if err != nil {
 			b.Errorf("Pop() returned an error: %v", err)

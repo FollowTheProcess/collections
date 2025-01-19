@@ -640,12 +640,13 @@ func BenchmarkIntersection(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.Intersection(s1, s2)
 	}
@@ -667,6 +668,7 @@ func BenchmarkContains(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		s.Contains(b.N)
 	}
@@ -676,12 +678,13 @@ func BenchmarkUnion(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.Union(s1, s2)
 	}
@@ -691,12 +694,13 @@ func BenchmarkDifference(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.Difference(s1, s2)
 	}
@@ -706,12 +710,13 @@ func BenchmarkIsDisjoint(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.IsDisjoint(s1, s2)
 	}
@@ -721,12 +726,13 @@ func BenchmarkIsSubset(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.IsSubset(s1, s2)
 	}
@@ -736,12 +742,13 @@ func BenchmarkSymmetricDifference(b *testing.B) {
 	s1 := set.New[int]()
 	s2 := set.New[int]()
 
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		s1.Insert(i)
 		s2.Insert(i + 500)
 	}
 
 	b.ResetTimer()
+
 	for range b.N {
 		set.SymmetricDifference(s1, s2)
 	}

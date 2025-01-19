@@ -87,6 +87,7 @@ func (q *Queue[T]) Push(item T, priority int) {
 func (q *Queue[T]) Pop() (T, error) {
 	if len(q.container) == 0 {
 		var zero T
+
 		return zero, errors.New("pop from empty priority queue")
 	}
 
@@ -118,7 +119,7 @@ func (q *Queue[T]) IsEmpty() bool {
 // the other methods. It is only used when creating a priority queue with [From].
 func (q *Queue[T]) init() {
 	n := len(q.container)
-	for i := n/2 - 1; i >= 0; i-- { //nolint: mnd
+	for i := n/2 - 1; i >= 0; i-- { //nolint: mnd // Dividing by 2, surely I don't have to put 2 in a constant?
 		q.siftDown(i, n)
 	}
 }
@@ -127,10 +128,11 @@ func (q *Queue[T]) init() {
 // for it's priority.
 func (q *Queue[T]) siftUp(index int) {
 	for {
-		parent := (index - 1) / 2 //nolint: mnd
+		parent := (index - 1) / 2 //nolint: mnd // Dividing by 2, surely I don't have to put 2 in a constant?
 		if parent == index || q.container[index].Priority < q.container[parent].Priority {
 			break
 		}
+
 		q.swap(parent, index)
 		index = parent
 	}
@@ -139,21 +141,26 @@ func (q *Queue[T]) siftUp(index int) {
 // siftDown moves an item (by index) down the heap until it's in the correct position.
 func (q *Queue[T]) siftDown(index, length int) bool {
 	i := index
+
 	for {
-		leftChild := 2*i + 1 //nolint: mnd
+		leftChild := 2*i + 1 //nolint: mnd // 2 comes up a lot in binary heaps
 		if leftChild >= length || leftChild < 0 {
 			break
 		}
+
 		toSwap := leftChild
 		if rightChild := leftChild + 1; rightChild < length && q.less(rightChild, leftChild) {
 			toSwap = rightChild
 		}
+
 		if !q.less(toSwap, i) {
 			break
 		}
+
 		q.swap(i, toSwap)
 		i = toSwap
 	}
+
 	return i > index
 }
 

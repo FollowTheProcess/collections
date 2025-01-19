@@ -87,6 +87,7 @@ func TestRemove(t *testing.T) {
 	c := counter.From(people)
 
 	tom := person{name: "Tom", age: 30}
+
 	test.Equal(t, c.Size(), 3) // Wrong size
 
 	test.Equal(t, c.Remove(tom), 2) // Wrong number of Toms before remove
@@ -161,6 +162,7 @@ func TestDescending(t *testing.T) {
 	c := counter.From(names)
 
 	var items []string
+
 	var counts []int
 
 	for item, count := range c.Descending() {
@@ -283,6 +285,7 @@ func BenchmarkMostCommon(b *testing.B) {
 	c := counter.From(names)
 
 	b.ResetTimer()
+
 	for range b.N {
 		c.MostCommon()
 	}
@@ -310,9 +313,12 @@ func BenchmarkDescending(b *testing.B) {
 	c := counter.From(names)
 
 	b.ResetTimer()
+
 	for range b.N {
 		// Just drain the iterator
-		for range c.Descending() {
+		for name, count := range c.Descending() {
+			_ = name
+			_ = count
 		}
 	}
 }

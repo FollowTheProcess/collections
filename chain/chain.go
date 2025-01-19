@@ -75,6 +75,7 @@ func (c Chain[K, V]) Get(key K) (value V, ok bool) {
 
 	// Wasn't in any of the maps
 	var zero V
+
 	return zero, false
 }
 
@@ -91,6 +92,7 @@ func (c *Chain[K, V]) Insert(key K, value V) (val V, existed bool) {
 		if old, exists := m[key]; exists {
 			// The item exists in one of the maps, this is therefore an update
 			m[key] = value
+
 			return old, true
 		}
 	}
@@ -100,7 +102,9 @@ func (c *Chain[K, V]) Insert(key K, value V) (val V, existed bool) {
 	if len(c.maps) == 0 {
 		c.maps = []map[K]V{make(map[K]V)}
 	}
+
 	c.maps[0][key] = value
+
 	return value, false
 }
 
@@ -115,11 +119,13 @@ func (c *Chain[K, V]) Remove(key K) (value V, existed bool) {
 	for _, m := range c.maps {
 		if val, exists := m[key]; exists {
 			delete(m, key)
+
 			return val, true
 		}
 	}
 
 	// Didn't exist
 	var zero V
+
 	return zero, false
 }
