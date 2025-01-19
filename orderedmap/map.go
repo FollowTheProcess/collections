@@ -164,11 +164,11 @@ func (m *Map[K, V]) GetOrInsert(key K, value V) (val V, existed bool) {
 	return value, false
 }
 
-// Items returns an iterator over the entries in the map
+// All returns an iterator over the entries in the map
 // in the order in which they were inserted.
-func (m *Map[K, V]) Items() iter.Seq2[K, V] {
+func (m *Map[K, V]) All() iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
-		for item := range m.list.Items() {
+		for item := range m.list.All() {
 			if !yield(item.key, item.value) {
 				return
 			}
@@ -180,7 +180,7 @@ func (m *Map[K, V]) Items() iter.Seq2[K, V] {
 // in the order in which they were inserted.
 func (m *Map[K, V]) Keys() iter.Seq[K] {
 	return func(yield func(K) bool) {
-		for item := range m.list.Items() {
+		for item := range m.list.All() {
 			if !yield(item.key) {
 				return
 			}
@@ -192,7 +192,7 @@ func (m *Map[K, V]) Keys() iter.Seq[K] {
 // in the order in which they were inserted.
 func (m *Map[K, V]) Values() iter.Seq[V] {
 	return func(yield func(V) bool) {
-		for item := range m.list.Items() {
+		for item := range m.list.All() {
 			if !yield(item.value) {
 				return
 			}

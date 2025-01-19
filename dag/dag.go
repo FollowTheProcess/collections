@@ -170,7 +170,7 @@ func (g *Graph[K, T]) Sort() ([]T, error) {
 
 		// For each child, remove 'vert' as a parent and check if it
 		// now has an in-degree of 0
-		for child := range vert.children.Items() {
+		for child := range vert.children.All() {
 			child.parents.Remove(vert)
 
 			// If it now has an in-degree of 0, add it to the queue

@@ -227,13 +227,13 @@ func TestRemove(t *testing.T) {
 	test.Equal(t, list.Len(), 3)
 
 	want := []string{"one", "three", "four"}
-	test.EqualFunc(t, slices.Collect(list.Items()), want, slices.Equal)
+	test.EqualFunc(t, slices.Collect(list.All()), want, slices.Equal)
 
 	list.Remove(three)
 	test.Equal(t, list.Len(), 2)
 
 	want = []string{"one", "four"}
-	test.EqualFunc(t, slices.Collect(list.Items()), want, slices.Equal)
+	test.EqualFunc(t, slices.Collect(list.All()), want, slices.Equal)
 }
 
 func TestItems(t *testing.T) {
@@ -244,7 +244,7 @@ func TestItems(t *testing.T) {
 		list.Append(i)
 	}
 
-	items := slices.Collect(list.Items())
+	items := slices.Collect(list.All())
 	want := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 	test.EqualFunc(t, items, want, slices.Equal)

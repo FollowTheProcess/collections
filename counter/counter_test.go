@@ -226,7 +226,7 @@ func TestAll(t *testing.T) {
 	c.Add("four")
 	c.Add("four")
 
-	all := maps.Collect(c.Counts())
+	all := maps.Collect(c.All())
 
 	want := map[string]int{
 		"one":   1,

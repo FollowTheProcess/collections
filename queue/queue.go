@@ -114,13 +114,13 @@ func (q *Queue[T]) IsEmpty() bool {
 	return len(q.container) == 0
 }
 
-// Items returns the an iterator over the queue in FIFO order.
+// All returns the an iterator over the queue in FIFO order.
 //
 //	q := queue.New[string]()
 //	q.Push("hello")
 //	q.Push("there")
-//	qlices.Collect(s.Items()) // [hello there]
-func (q *Queue[T]) Items() iter.Seq[T] {
+//	qlices.Collect(s.All()) // [hello there]
+func (q *Queue[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, item := range q.container {
 			if !yield(item) {

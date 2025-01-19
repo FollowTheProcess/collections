@@ -85,7 +85,7 @@ func TestItems(t *testing.T) {
 	s.Push("kenobi")
 
 	want := []string{"kenobi", "general", "there", "hello"}
-	got := slices.Collect(s.Items())
+	got := slices.Collect(s.All())
 
 	test.EqualFunc(t, got, want, slices.Equal)
 }
