@@ -2,8 +2,10 @@ package orderedmap_test
 
 import (
 	"maps"
+	"math/rand/v2"
 	"slices"
 	"testing"
+	"testing/quick"
 
 	"github.com/FollowTheProcess/collections/orderedmap"
 	"github.com/FollowTheProcess/test"
@@ -172,6 +174,69 @@ func TestValues(t *testing.T) {
 	want := []int{1, 2, 3, 4}
 
 	test.EqualFunc(t, values, want, slices.Equal)
+}
+
+func TestInsertGetProperty(t *testing.T) {
+	m := orderedmap.New[string, int]()
+
+	// TIL testing/quick exists!
+
+	insert := func(key string, value int) int {
+		// If we insert a value against a given key
+		m.Insert(key, value)
+
+		return value
+	}
+
+	get := func(key string, _ int) int {
+		// We should always get it back with Get, regardless
+		// of the key or value
+		val, _ := m.Get(key)
+
+		return val
+	}
+
+	if err := quick.CheckEqual(insert, get, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+func FuzzInsertGet(f *testing.F) {
+	// Fuzz is similar but you have to give a hint on the values first
+	// and it takes longer
+	corpus := [...]string{
+		"",
+		"a normal sentence",
+		"日a本b語ç日ð本Ê語þ日¥本¼語i日©",
+		"\xf8\xa1\xa1\xa1\xa1",
+		"£$%^&*(((())))",
+		"91836347287",
+		"日ð本Ê語þ日¥本¼語i",
+		"✅🛠️🧠⚡️⚠️😎🪜",
+		"\n\n\r\n\t   ",
+	}
+
+	for _, item := range corpus {
+		f.Add(item, rand.Int())
+	}
+
+	m := orderedmap.New[string, int]()
+
+	f.Fuzz(func(t *testing.T, key string, value int) {
+		// If we insert a value against a given key
+		m.Insert(key, value)
+
+		// We should always get the same value when asking for
+		// the same key
+		got, ok := m.Get(key)
+		if !ok {
+			t.Fatalf("key %s not found in map after insertion", key)
+		}
+
+		if got != value {
+			t.Fatalf("value fetched from map (%d) differs from that inserted (%d)", got, value)
+		}
+	})
 }
 
 func BenchmarkInsert(b *testing.B) {
