@@ -117,7 +117,7 @@ func TestPushPop(t *testing.T) {
 // BenchmarkNew measures the performance of constructing a new empty Queue
 // and calling Push to fill it with elements.
 func BenchmarkNew(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		q := priority.New[string]()
 		q.Push("one", 1)
 		q.Push("two", 2)
@@ -140,7 +140,7 @@ func BenchmarkFrom(b *testing.B) {
 		{Item: "five", Priority: 5},
 	}
 
-	for range b.N {
+	for b.Loop() {
 		priority.From(elements)
 	}
 }
@@ -169,7 +169,7 @@ func BenchmarkFromFunc(b *testing.B) {
 		}
 	}
 
-	for range b.N {
+	for b.Loop() {
 		priority.FromFunc(items, priorityFunc)
 	}
 }

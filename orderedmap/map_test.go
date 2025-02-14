@@ -243,10 +243,10 @@ func BenchmarkInsert(b *testing.B) {
 	b.Run("new", func(b *testing.B) {
 		m := orderedmap.New[int, int]()
 
-		b.ResetTimer()
-
-		for i := range b.N {
+		i := 0
+		for b.Loop() {
 			m.Insert(i, i)
+			i++
 		}
 	})
 
@@ -254,9 +254,7 @@ func BenchmarkInsert(b *testing.B) {
 		m := orderedmap.New[string, int]()
 		m.Insert("hello", 1)
 
-		b.ResetTimer()
-
-		for range b.N {
+		for b.Loop() {
 			m.Insert("hello", 2) // Update the value stored against "hello"
 		}
 	})
@@ -266,9 +264,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("exists", func(b *testing.B) {
 		m := orderedmap.New[string, int]()
 
-		b.ResetTimer()
-
-		for range b.N {
+		for b.Loop() {
 			// I've tried doing various combinations of b.StopTimer() and stuff but
 			// it doesn't ever seem to work correctly so we just live with including
 			// the insertion too
@@ -280,9 +276,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("missing", func(b *testing.B) {
 		m := orderedmap.New[string, int]()
 
-		b.ResetTimer()
-
-		for range b.N {
+		for b.Loop() {
 			m.Remove("hello") // Doesn't exist, remove should be a no-op
 		}
 	})

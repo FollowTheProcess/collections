@@ -284,9 +284,7 @@ func BenchmarkMostCommon(b *testing.B) {
 
 	c := counter.From(names)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		c.MostCommon()
 	}
 }
@@ -312,9 +310,7 @@ func BenchmarkDescending(b *testing.B) {
 
 	c := counter.From(names)
 
-	b.ResetTimer()
-
-	for range b.N {
+	for b.Loop() {
 		// Just drain the iterator
 		for name, count := range c.Descending() {
 			_ = name
