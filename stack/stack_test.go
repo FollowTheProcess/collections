@@ -137,7 +137,7 @@ func TestCollect(t *testing.T) {
 func BenchmarkStack(b *testing.B) {
 	s := stack.New[int]()
 
-	for range b.N {
+	for b.Loop() {
 		s.Push(1)
 
 		_, err := s.Pop()
