@@ -4,8 +4,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/FollowTheProcess/collections/dag"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/dag"
+	"go.followtheprocess.codes/test"
 )
 
 func TestAddVertex(t *testing.T) {

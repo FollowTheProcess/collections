@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/FollowTheProcess/collections/set"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/set"
+	"go.followtheprocess.codes/test"
 )
 
 func TestInsert(t *testing.T) {

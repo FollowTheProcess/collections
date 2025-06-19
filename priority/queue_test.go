@@ -3,8 +3,8 @@ package priority_test
 import (
 	"testing"
 
-	"github.com/FollowTheProcess/collections/priority"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/priority"
+	"go.followtheprocess.codes/test"
 )
 
 func TestNew(t *testing.T) {

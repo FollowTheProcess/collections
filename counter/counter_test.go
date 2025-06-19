@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/FollowTheProcess/collections/counter"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/counter"
+	"go.followtheprocess.codes/test"
 )
 
 func TestNewCounter(t *testing.T) {

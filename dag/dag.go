@@ -1,11 +1,14 @@
-package dag
+// Package dag implements a [Directed Acyclic Graph]
+//
+// [Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph
+package dag // import "go.followtheprocess.codes/collections/dag"
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/FollowTheProcess/collections/queue"
-	"github.com/FollowTheProcess/collections/set"
+	"go.followtheprocess.codes/collections/queue"
+	"go.followtheprocess.codes/collections/set"
 )
 
 // vertex is a single node in the graph, and holds the underlying data

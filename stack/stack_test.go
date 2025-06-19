@@ -4,8 +4,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/FollowTheProcess/collections/stack"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/stack"
+	"go.followtheprocess.codes/test"
 )
 
 func TestIsEmpty(t *testing.T) {

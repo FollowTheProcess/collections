@@ -1,6 +1,6 @@
 // Package priority implements a generic priority queue; that is a queue who's items are assigned a priority
 // and are popped off the queue in (descending) order of this priority.
-package priority
+package priority // import "go.followtheprocess.codes/collections/priority"
 
 import (
 	"errors"
