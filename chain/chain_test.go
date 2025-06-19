@@ -4,8 +4,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/FollowTheProcess/collections/chain"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/chain"
+	"go.followtheprocess.codes/test"
 )
 
 func TestNew(t *testing.T) {

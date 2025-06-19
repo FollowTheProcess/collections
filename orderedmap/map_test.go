@@ -7,8 +7,8 @@ import (
 	"testing"
 	"testing/quick"
 
-	"github.com/FollowTheProcess/collections/orderedmap"
-	"github.com/FollowTheProcess/test"
+	"go.followtheprocess.codes/collections/orderedmap"
+	"go.followtheprocess.codes/test"
 )
 
 func TestGetInsert(t *testing.T) {

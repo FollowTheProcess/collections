@@ -5,7 +5,7 @@
 //
 // The list can be traversed both forwards and backwards and offers cheap (O(1)) insertion
 // and removal from arbitrary indexes.
-package list
+package list // import "go.followtheprocess.codes/collections/list"
 
 import (
 	"errors"

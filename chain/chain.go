@@ -1,6 +1,6 @@
 // Package chain provides an implementation of chained maps in a single view, where lookups traverse
 // the layers of maps until a match is found.
-package chain
+package chain // import "go.followtheprocess.codes/chain"
 
 import (
 	"iter"

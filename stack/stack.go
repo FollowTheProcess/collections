@@ -2,7 +2,7 @@
 //
 // The stack is not safe for concurrent access across goroutines, the caller is responsible for
 // synchronising concurrent access.
-package stack
+package stack // import "go.followtheprocess.codes/collections/stack"
 
 import (
 	"errors"

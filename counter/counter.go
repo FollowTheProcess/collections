@@ -4,7 +4,7 @@
 //
 // The counter is not safe for concurrent access across goroutines, the caller is responsible for
 // synchronising concurrent access.
-package counter
+package counter // import "go.followtheprocess.codes/counter"
 
 import (
 	"cmp"

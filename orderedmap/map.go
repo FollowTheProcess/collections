@@ -1,11 +1,11 @@
 // Package orderedmap implements an ordered map, that is; a map that remembers the order in which
 // key, value pairs were inserted.
-package orderedmap
+package orderedmap // import "go.followtheprocess.codes/collections/orderedmap"
 
 import (
 	"iter"
 
-	"github.com/FollowTheProcess/collections/list"
+	"go.followtheprocess.codes/collections/list"
 )
 
 // entry is a single key, value pair entry in the map.

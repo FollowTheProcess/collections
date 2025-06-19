@@ -2,7 +2,7 @@
 //
 // The set is not safe for concurrent access across goroutines, the caller is responsible for
 // synchronising concurrent access.
-package set
+package set // import "go.followtheprocess.codes/collections/set"
 
 import (
 	"fmt"

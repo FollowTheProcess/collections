@@ -2,7 +2,7 @@
 //
 // The queue is not safe for concurrent access across goroutines, the caller is responsible for
 // synchronising concurrent access.
-package queue
+package queue // import "go.followtheprocess.codes/collections/queue"
 
 import (
 	"errors"

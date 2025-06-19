@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/FollowTheProcess/collections)](https://goreportcard.com/report/github.com/FollowTheProcess/collections)
 [![GitHub](https://img.shields.io/github/v/release/FollowTheProcess/collections?logo=github&sort=semver)](https://github.com/FollowTheProcess/collections)
 [![CI](https://github.com/FollowTheProcess/collections/workflows/CI/badge.svg)](https://github.com/FollowTheProcess/collections/actions?query=workflow%3ACI)
-[![Go Reference](https://pkg.go.dev/badge/github.com/FollowTheProcess/collections.svg)](https://pkg.go.dev/github.com/FollowTheProcess/collections)
+[![Go Reference](https://pkg.go.dev/badge/go.followtheprocess.codes/collections.svg)](https://pkg.go.dev/go.followtheprocess.codes/collections)
 [![codecov](https://codecov.io/gh/FollowTheProcess/collections/branch/main/graph/badge.svg)](https://codecov.io/gh/FollowTheProcess/collections)
 
 Collection of generic data structures in Go 📦
@@ -24,7 +24,7 @@ Collection of generic data structures in Go 📦
     - [Priority Queue](#priority-queue)
 
 > [!TIP]
-> Most collections support the Go 1.23 functional iterator pattern
+> Most collections support the Go 1.23+ functional iterator pattern
 
 ## Project Description
 
@@ -43,7 +43,7 @@ Small, useful, zero dependency implementations of generic collection data struct
 ## Installation
 
 ```shell
-go get github.com/FollowTheProcess/collections@latest
+go get go.followtheprocess.codes/collections@latest
 ```
 
 ## Quickstart
