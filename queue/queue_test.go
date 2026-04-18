@@ -30,11 +30,6 @@ func TestSize(t *testing.T) {
 	test.Equal(t, q.Size(), 4)
 }
 
-func TestCapacity(t *testing.T) {
-	q := queue.WithCapacity[int](10)
-	test.Equal(t, q.Capacity(), 10)
-}
-
 func TestPop(t *testing.T) {
 	q := queue.New[string]()
 	q.Push("hello")
@@ -118,6 +113,22 @@ func TestCollect(t *testing.T) {
 	second, err := q.Pop()
 	test.Ok(t, err)
 	test.Equal(t, second, "apples")
+}
+
+func TestWrapAroundFIFO(t *testing.T) {
+	q := queue.WithCapacity[int](4)
+	q.Push(1)
+	q.Push(2)
+	q.Push(3)
+	q.Push(4)
+	q.Pop() //nolint:errcheck // No need
+	q.Pop() //nolint:errcheck // No need
+	q.Push(5)
+	q.Push(6)
+
+	got := slices.Collect(q.All())
+	want := []int{3, 4, 5, 6}
+	test.EqualFunc(t, got, want, slices.Equal)
 }
 
 func TestNotNew(t *testing.T) {

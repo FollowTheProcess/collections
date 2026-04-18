@@ -11,15 +11,16 @@ import (
 )
 
 // Queue is a FIFO queue generic over any type.
-//
-// A Queue should be instantiated by the New function and not directly.
 type Queue[T any] struct {
-	container []T // Underlying slice
+	container []T // Ring buffer backing array (len == capacity)
+	head      int // Index of the next item to pop
+	tail      int // Index of the next slot to push into
+	size      int // Number of items currently in the queue
 }
 
 // New constructs and returns a new Queue.
 func New[T any]() *Queue[T] {
-	return &Queue[T]{container: make([]T, 0)}
+	return &Queue[T]{}
 }
 
 // WithCapacity constructs and returns a new Queue with the given capacity.
@@ -27,7 +28,7 @@ func New[T any]() *Queue[T] {
 // This can be a useful performance improvement when the expected maximum size of the queue is
 // known ahead of time as it eliminates the need for reallocation.
 func WithCapacity[T any](capacity int) *Queue[T] {
-	return &Queue[T]{container: make([]T, 0, capacity)}
+	return &Queue[T]{container: make([]T, capacity)}
 }
 
 // From builds a [Queue] from an existing slice of items, pushing items
@@ -59,7 +60,17 @@ func Collect[T any](items iter.Seq[T]) *Queue[T] {
 //	q := queue.New[string]()
 //	q.Push("hello")
 func (q *Queue[T]) Push(item T) {
-	q.container = append(q.container, item)
+	if len(q.container) == 0 {
+		q.container = make([]T, 1)
+	}
+
+	if q.size == len(q.container) {
+		q.grow()
+	}
+
+	q.container[q.tail] = item
+	q.tail = (q.tail + 1) % len(q.container)
+	q.size++
 }
 
 // Pop removes an item from the front of the queue, if the queue
@@ -71,15 +82,17 @@ func (q *Queue[T]) Push(item T) {
 //	item, _ := q.Pop()
 //	fmt.Println(item) // "hello"
 func (q *Queue[T]) Pop() (T, error) {
-	l := len(q.container)
-	if l == 0 {
+	if q.size == 0 {
 		var none T
 
 		return none, errors.New("pop from empty queue")
 	}
 
-	item := (q.container)[0]
-	q.container = (q.container)[1:]
+	item := q.container[q.head]
+	var zero T
+	q.container[q.head] = zero
+	q.head = (q.head + 1) % len(q.container)
+	q.size--
 
 	return item, nil
 }
@@ -92,18 +105,7 @@ func (q *Queue[T]) Pop() (T, error) {
 //	s.Push("there")
 //	s.Size() // 2
 func (q *Queue[T]) Size() int {
-	return len(q.container)
-}
-
-// Capacity returns the capacity of the queue, i.e. the number of items
-// it can contain without the need for reallocation.
-//
-// Use [WithCapacity] to create a queue of a given capacity.
-//
-//	q := queue.WithCapacity[string](10)
-//	q.Capacity() // 10
-func (q *Queue[T]) Capacity() int {
-	return cap(q.container)
+	return q.size
 }
 
 // IsEmpty returns whether or not the queue is empty.
@@ -113,7 +115,7 @@ func (q *Queue[T]) Capacity() int {
 //	s.Push("hello")
 //	s.IsEmpty() // false
 func (q *Queue[T]) IsEmpty() bool {
-	return len(q.container) == 0
+	return q.size == 0
 }
 
 // All returns the an iterator over the queue in FIFO order.
@@ -124,8 +126,8 @@ func (q *Queue[T]) IsEmpty() bool {
 //	qlices.Collect(s.All()) // [hello there]
 func (q *Queue[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
-		for _, item := range q.container {
-			if !yield(item) {
+		for i := range q.size {
+			if !yield(q.container[(q.head+i)%len(q.container)]) {
 				return
 			}
 		}
@@ -134,5 +136,20 @@ func (q *Queue[T]) All() iter.Seq[T] {
 
 // String satisfies the [fmt.Stringer] interface and allows a Queue to be printed.
 func (q *Queue[T]) String() string {
-	return fmt.Sprintf("%v", q.container)
+	items := make([]T, q.size)
+	for i := range q.size {
+		items[i] = q.container[(q.head+i)%len(q.container)]
+	}
+
+	return fmt.Sprintf("%v", items)
+}
+
+// grow doubles the capacity of the ring buffer, copying items into logical order.
+func (q *Queue[T]) grow() {
+	newContainer := make([]T, len(q.container)*2)
+	n := copy(newContainer, q.container[q.head:])
+	copy(newContainer[n:], q.container[:q.head])
+	q.head = 0
+	q.tail = q.size
+	q.container = newContainer
 }
