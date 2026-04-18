@@ -30,6 +30,7 @@ linters:
     - ireturn # This is just not necessary or practical in a real codebase
     - lll # Auto formatters do this and what they can't do I don't care about
     - maintidx # This is just the inverse of complexity... which is cyclop
+    - mnd # Honestly just annoying most of the time
     - nestif # cyclop does this
     - nlreturn # Similar to wsl, I think best left to judgement
     - noinlineerr # Inline errors are fine
