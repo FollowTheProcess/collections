@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"iter"
 	"maps"
+	"slices"
 )
 
 // Graph is a generic directed acyclic graph, generic over 'K' which is a comparable
@@ -19,8 +20,9 @@ import (
 // The ID must be unique within a [Graph].
 type Graph[K comparable, T any] struct {
 	vertices map[K]T              // The map of id -> item
-	children map[K]map[K]struct{} // id -> set of child ids
-	parents  map[K]map[K]struct{} // id -> set of parent ids
+	children map[K][]K            // id -> ordered slice of child ids
+	childSet map[K]map[K]struct{} // mirror of children for O(1) existence checks
+	parents  map[K][]K            // id -> ordered slice of parent ids
 	edges    int                  // Edge count
 }
 
@@ -37,8 +39,9 @@ type Graph[K comparable, T any] struct {
 func New[K comparable, T any]() *Graph[K, T] {
 	return &Graph[K, T]{
 		vertices: make(map[K]T),
-		children: make(map[K]map[K]struct{}),
-		parents:  make(map[K]map[K]struct{}),
+		children: make(map[K][]K),
+		childSet: make(map[K]map[K]struct{}),
+		parents:  make(map[K][]K),
 	}
 }
 
@@ -49,8 +52,9 @@ func New[K comparable, T any]() *Graph[K, T] {
 func WithCapacity[K comparable, T any](capacity int) *Graph[K, T] {
 	return &Graph[K, T]{
 		vertices: make(map[K]T, capacity),
-		children: make(map[K]map[K]struct{}, capacity),
-		parents:  make(map[K]map[K]struct{}, capacity),
+		children: make(map[K][]K, capacity),
+		childSet: make(map[K]map[K]struct{}, capacity),
+		parents:  make(map[K][]K, capacity),
 	}
 }
 
@@ -78,8 +82,9 @@ func (g *Graph[K, T]) AddVertex(id K, item T) error {
 	}
 
 	g.vertices[id] = item
-	g.children[id] = make(map[K]struct{})
-	g.parents[id] = make(map[K]struct{})
+	g.children[id] = []K{}
+	g.childSet[id] = make(map[K]struct{})
+	g.parents[id] = []K{}
 
 	return nil
 }
@@ -92,18 +97,20 @@ func (g *Graph[K, T]) RemoveVertex(id K) error {
 		return fmt.Errorf("vertex with id '%v': %w", id, ErrVertexNotFound)
 	}
 
-	for child := range g.children[id] {
-		delete(g.parents[child], id)
+	for _, child := range g.children[id] {
+		g.parents[child] = removeFromSlice(g.parents[child], id)
 		g.edges--
 	}
 
-	for parent := range g.parents[id] {
-		delete(g.children[parent], id)
+	for _, parent := range g.parents[id] {
+		g.children[parent] = removeFromSlice(g.children[parent], id)
+		delete(g.childSet[parent], id)
 		g.edges--
 	}
 
 	delete(g.vertices, id)
 	delete(g.children, id)
+	delete(g.childSet, id)
 	delete(g.parents, id)
 
 	return nil
@@ -157,7 +164,7 @@ func (g *Graph[K, T]) AddEdge(from, to K) error {
 		return fmt.Errorf("child vertex with id '%v': %w", to, ErrVertexNotFound)
 	}
 
-	if _, exists := g.children[from][to]; exists {
+	if _, exists := g.childSet[from][to]; exists {
 		return fmt.Errorf("'%v' -> '%v': %w", from, to, ErrEdgeExists)
 	}
 
@@ -165,8 +172,9 @@ func (g *Graph[K, T]) AddEdge(from, to K) error {
 		return fmt.Errorf("adding '%v' -> '%v': %w", from, to, ErrCycle)
 	}
 
-	g.children[from][to] = struct{}{}
-	g.parents[to][from] = struct{}{}
+	g.children[from] = append(g.children[from], to)
+	g.childSet[from][to] = struct{}{}
+	g.parents[to] = append(g.parents[to], from)
 	g.edges++
 
 	return nil
@@ -189,8 +197,9 @@ func (g *Graph[K, T]) RemoveEdge(from, to K) error {
 		return fmt.Errorf("'%v' -> '%v': %w", from, to, ErrEdgeNotFound)
 	}
 
-	delete(g.children[from], to)
-	delete(g.parents[to], from)
+	g.children[from] = removeFromSlice(g.children[from], to)
+	delete(g.childSet[from], to)
+	g.parents[to] = removeFromSlice(g.parents[to], from)
 	g.edges--
 
 	return nil
@@ -198,7 +207,7 @@ func (g *Graph[K, T]) RemoveEdge(from, to K) error {
 
 // HasEdge reports whether a directed edge exists from 'from' to 'to'.
 func (g *Graph[K, T]) HasEdge(from, to K) bool {
-	_, exists := g.children[from][to]
+	_, exists := g.childSet[from][to]
 	return exists
 }
 
@@ -210,7 +219,7 @@ func (g *Graph[K, T]) Children(id K) (iter.Seq[K], error) {
 		return nil, fmt.Errorf("vertex with id '%v': %w", id, ErrVertexNotFound)
 	}
 
-	return maps.Keys(g.children[id]), nil
+	return slices.Values(g.children[id]), nil
 }
 
 // Parents returns an iterator over the direct parents (immediate dependencies) of the vertex with the given id.
@@ -221,7 +230,7 @@ func (g *Graph[K, T]) Parents(id K) (iter.Seq[K], error) {
 		return nil, fmt.Errorf("vertex with id '%v': %w", id, ErrVertexNotFound)
 	}
 
-	return maps.Keys(g.parents[id]), nil
+	return slices.Values(g.parents[id]), nil
 }
 
 // Descendants returns an iterator over all transitive descendants of the vertex with the given id,
@@ -252,9 +261,7 @@ func (g *Graph[K, T]) Descendants(id K) (iter.Seq[K], error) {
 				}
 			}
 
-			for child := range g.children[current] {
-				stack = append(stack, child)
-			}
+			stack = append(stack, g.children[current]...)
 		}
 	}, nil
 }
@@ -287,9 +294,7 @@ func (g *Graph[K, T]) Ancestors(id K) (iter.Seq[K], error) {
 				}
 			}
 
-			for parent := range g.parents[current] {
-				stack = append(stack, parent)
-			}
+			stack = append(stack, g.parents[current]...)
 		}
 	}, nil
 }
@@ -337,7 +342,7 @@ func (g *Graph[K, T]) Sort() []T {
 
 		result = append(result, g.vertices[keys[i]])
 
-		for child := range g.children[keys[i]] {
+		for _, child := range g.children[keys[i]] {
 			ci := index[child]
 			inDegree[ci]--
 			if inDegree[ci] == 0 {
@@ -368,10 +373,19 @@ func (g *Graph[K, T]) canReach(to, from K) bool {
 		}
 		visited[current] = struct{}{}
 
-		for child := range g.children[current] {
-			stack = append(stack, child)
-		}
+		stack = append(stack, g.children[current]...)
 	}
 
 	return false
+}
+
+// removeFromSlice removes the first occurrence of v from s using swap-remove (O(degree) scan, O(1) remove).
+// Order is not preserved, which is fine because adjacency lists have no documented order.
+func removeFromSlice[K comparable](s []K, v K) []K {
+	i := slices.Index(s, v)
+	if i < 0 {
+		return s
+	}
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
