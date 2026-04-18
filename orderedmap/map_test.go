@@ -426,9 +426,6 @@ func BenchmarkAll(b *testing.B) {
 		m.Insert(i, i)
 	}
 
-	b.ReportAllocs()
-	b.ResetTimer()
-
 	for b.Loop() {
 		var sum int
 		for _, v := range m.All() {
@@ -447,9 +444,6 @@ func BenchmarkAll(b *testing.B) {
 // once the slice has grown.
 func BenchmarkChurn(b *testing.B) {
 	m := orderedmap.New[int, int]()
-
-	b.ReportAllocs()
-	b.ResetTimer()
 
 	i := 0
 	for b.Loop() {
