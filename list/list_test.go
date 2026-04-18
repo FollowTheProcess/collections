@@ -13,11 +13,11 @@ func TestEmptyList(t *testing.T) {
 		list := list.New[string]()
 
 		first, err := list.First()
-		test.Err(t, err) // Should be list is empty error
+		test.Err(t, err, test.Context("Should be list is empty error"))
 		test.Equal(t, first, nil)
 
 		last, err := list.Last()
-		test.Err(t, err) // Should be list is empty error
+		test.Err(t, err, test.Context("Should be list is empty error"))
 		test.Equal(t, last, nil)
 
 		test.Equal(t, list.Len(), 0)
@@ -27,11 +27,11 @@ func TestEmptyList(t *testing.T) {
 		list := &list.List[string]{}
 
 		first, err := list.First()
-		test.Err(t, err) // Should be list is empty error
+		test.Err(t, err, test.Context("Should be list is empty error"))
 		test.Equal(t, first, nil)
 
 		last, err := list.Last()
-		test.Err(t, err) // Should be list is empty error
+		test.Err(t, err, test.Context("Should be list is empty error"))
 		test.Equal(t, last, nil)
 
 		test.Equal(t, list.Len(), 0)
@@ -42,15 +42,15 @@ func TestAppend(t *testing.T) {
 	list := list.New[string]()
 
 	list.Append("foo")
-	test.Equal(t, list.Len(), 1) // Wrong length after append
+	test.Equal(t, list.Len(), 1, test.Context("Wrong length after append"))
 
 	first, err := list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "foo") // First item should be "foo"
+	test.Equal(t, first.Item(), "foo", test.Context("First item should be \"foo\""))
 
 	last, err := list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "foo") // Last item should also be "foo"
+	test.Equal(t, last.Item(), "foo", test.Context("Last item should also be \"foo\""))
 
 	// Append again
 	list.Append("bar")
@@ -58,11 +58,11 @@ func TestAppend(t *testing.T) {
 
 	first, err = list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "foo") // First should *still* be "foo"
+	test.Equal(t, first.Item(), "foo", test.Context("First should *still* be \"foo\""))
 
 	last, err = list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "bar") // Last should now be "bar"
+	test.Equal(t, last.Item(), "bar", test.Context("Last should now be \"bar\""))
 
 	// One more time
 	list.Append("baz")
@@ -70,26 +70,26 @@ func TestAppend(t *testing.T) {
 
 	first, err = list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "foo") // First should *still* be "foo"
+	test.Equal(t, first.Item(), "foo", test.Context("First should *still* be \"foo\""))
 
 	last, err = list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "baz") // Last should now be "baz"
+	test.Equal(t, last.Item(), "baz", test.Context("Last should now be \"baz\""))
 }
 
 func TestPrepend(t *testing.T) {
 	list := list.New[string]()
 
 	list.Prepend("foo")
-	test.Equal(t, list.Len(), 1) // Wrong length after prepend
+	test.Equal(t, list.Len(), 1, test.Context("Wrong length after prepend"))
 
 	first, err := list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "foo") // First element should be "foo"
+	test.Equal(t, first.Item(), "foo", test.Context("First element should be \"foo\""))
 
 	last, err := list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "foo") // Last element should also be "foo"
+	test.Equal(t, last.Item(), "foo", test.Context("Last element should also be \"foo\""))
 
 	// Prepend again
 	list.Prepend("bar")
@@ -97,11 +97,11 @@ func TestPrepend(t *testing.T) {
 
 	first, err = list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "bar") // First should now be "bar"
+	test.Equal(t, first.Item(), "bar", test.Context("First should now be \"bar\""))
 
 	last, err = list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "foo") // Last should still be "foo"
+	test.Equal(t, last.Item(), "foo", test.Context("Last should still be \"foo\""))
 
 	// One more time
 	list.Prepend("baz")
@@ -109,11 +109,11 @@ func TestPrepend(t *testing.T) {
 
 	first, err = list.First()
 	test.Ok(t, err)
-	test.Equal(t, first.Item(), "baz") // First should now be "baz"
+	test.Equal(t, first.Item(), "baz", test.Context("First should now be \"baz\""))
 
 	last, err = list.Last()
 	test.Ok(t, err)
-	test.Equal(t, last.Item(), "foo") // Last should still be "foo"
+	test.Equal(t, last.Item(), "foo", test.Context("Last should still be \"foo\""))
 }
 
 func TestPop(t *testing.T) {
@@ -135,7 +135,7 @@ func TestPop(t *testing.T) {
 	three, err := list.Pop()
 	test.Ok(t, err)
 	test.Equal(t, three.Item(), 3)
-	test.Equal(t, list.Len(), 2) // Len should be 2 after Pop
+	test.Equal(t, list.Len(), 2, test.Context("Len should be 2 after Pop"))
 
 	last, err = list.Last()
 	test.Ok(t, err)
@@ -144,12 +144,12 @@ func TestPop(t *testing.T) {
 	two, err := list.Pop()
 	test.Ok(t, err)
 	test.Equal(t, two.Item(), 2)
-	test.Equal(t, list.Len(), 1) // Len should be 1 after second Pop
+	test.Equal(t, list.Len(), 1, test.Context("Len should be 1 after second Pop"))
 
 	one, err := list.Pop()
 	test.Ok(t, err)
 	test.Equal(t, one.Item(), 1)
-	test.Equal(t, list.Len(), 0) // Len should be 0 after third Pop
+	test.Equal(t, list.Len(), 0, test.Context("Len should be 0 after third Pop"))
 
 	first, err = list.First()
 	test.Err(t, err)
@@ -184,7 +184,7 @@ func TestPopFirst(t *testing.T) {
 	one, err := list.PopFirst()
 	test.Ok(t, err)
 	test.Equal(t, one.Item(), 1)
-	test.Equal(t, list.Len(), 2) // Len should be 2 after PopFirst
+	test.Equal(t, list.Len(), 2, test.Context("Len should be 2 after PopFirst"))
 
 	last, err = list.Last()
 	test.Ok(t, err)
@@ -193,12 +193,12 @@ func TestPopFirst(t *testing.T) {
 	two, err := list.PopFirst()
 	test.Ok(t, err)
 	test.Equal(t, two.Item(), 2)
-	test.Equal(t, list.Len(), 1) // Len should be 1 after second PopFirst
+	test.Equal(t, list.Len(), 1, test.Context("Len should be 1 after second PopFirst"))
 
 	three, err := list.PopFirst()
 	test.Ok(t, err)
 	test.Equal(t, three.Item(), 3)
-	test.Equal(t, list.Len(), 0) // Len should be 0 after third PopFirst
+	test.Equal(t, list.Len(), 0, test.Context("Len should be 0 after third PopFirst"))
 
 	first, err = list.First()
 	test.Err(t, err)

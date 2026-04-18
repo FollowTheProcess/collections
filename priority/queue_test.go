@@ -9,11 +9,11 @@ import (
 
 func TestNew(t *testing.T) {
 	q := priority.New[string]()
-	test.Equal(t, q.Size(), 0)       // Initial size should be empty
-	test.Equal(t, q.IsEmpty(), true) // Should be empty
+	test.Equal(t, q.Size(), 0, test.Context("Initial size should be empty"))
+	test.Equal(t, q.IsEmpty(), true, test.Context("Should be empty"))
 
 	item, err := q.Pop()
-	test.Err(t, err) // Pop from empty queue
+	test.Err(t, err, test.Context("Pop from empty queue"))
 	test.Equal(t, item, "")
 }
 
@@ -69,16 +69,16 @@ func TestFromFunc(t *testing.T) {
 
 func TestSize(t *testing.T) {
 	q := priority.New[string]()
-	test.Equal(t, q.Size(), 0)       // Initial size should be empty
-	test.Equal(t, q.IsEmpty(), true) // Should be empty
+	test.Equal(t, q.Size(), 0, test.Context("Initial size should be empty"))
+	test.Equal(t, q.IsEmpty(), true, test.Context("Should be empty"))
 
 	q.Push("one", 1)
 	q.Push("two", 2)
 	q.Push("three", 3)
 	q.Push("four", 4)
 
-	test.Equal(t, q.Size(), 4)        // Wrong size after push
-	test.Equal(t, q.IsEmpty(), false) // Should not be empty
+	test.Equal(t, q.Size(), 4, test.Context("Wrong size after push"))
+	test.Equal(t, q.IsEmpty(), false, test.Context("Should not be empty"))
 }
 
 func TestPushPop(t *testing.T) {
@@ -89,28 +89,28 @@ func TestPushPop(t *testing.T) {
 	q.Push("three", 3)
 	q.Push("four", 4)
 
-	test.Equal(t, q.Size(), 4) // Incorrect size after push
+	test.Equal(t, q.Size(), 4, test.Context("Incorrect size after push"))
 
 	first, err := q.Pop()
 	test.Ok(t, err)
-	test.Equal(t, first, "four") // four has highest priority
+	test.Equal(t, first, "four", test.Context("four has highest priority"))
 
-	test.Equal(t, q.Size(), 3) // Incorrect size after pop
+	test.Equal(t, q.Size(), 3, test.Context("Incorrect size after pop"))
 
 	second, err := q.Pop()
 	test.Ok(t, err)
-	test.Equal(t, second, "three") // Next priority is in three
+	test.Equal(t, second, "three", test.Context("Next priority is in three"))
 
 	third, err := q.Pop()
 	test.Ok(t, err)
-	test.Equal(t, third, "two") // Next highest is two
+	test.Equal(t, third, "two", test.Context("Next highest is two"))
 
 	fourth, err := q.Pop()
 	test.Ok(t, err)
-	test.Equal(t, fourth, "one") // One is least
+	test.Equal(t, fourth, "one", test.Context("One is least"))
 
 	fifth, err := q.Pop()
-	test.Err(t, err) // Pop from empty queue
+	test.Err(t, err, test.Context("Pop from empty queue"))
 	test.Equal(t, fifth, "")
 }
 

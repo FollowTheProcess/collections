@@ -44,16 +44,13 @@ func New[T any]() *List[T] {
 // Append adds an item to the end (tail) of the list, returning the list [Node] it was inserted into.
 // It may be retrieved afterwards with l.Last().
 func (l *List[T]) Append(item T) *Node[T] {
-	node := NewNode(item)
 	if l.last != nil {
-		// List has items in it, insert after last
+		node := NewNode(item)
 		l.insertAfter(l.last, node)
-	} else {
-		// Empty list
-		l.Prepend(item)
+		return node
 	}
 
-	return node
+	return l.Prepend(item)
 }
 
 // Prepend adds an item to the front (head) of the list, returning the list [Node] it was inserted into.
