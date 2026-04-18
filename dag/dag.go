@@ -19,11 +19,10 @@ import (
 //
 // The ID must be unique within a [Graph].
 type Graph[K comparable, T any] struct {
-	vertices map[K]T              // The map of id -> item
-	children map[K][]K            // id -> ordered slice of child ids
-	childSet map[K]map[K]struct{} // mirror of children for O(1) existence checks
-	parents  map[K][]K            // id -> ordered slice of parent ids
-	edges    int                  // Edge count
+	vertices map[K]T   // The map of id -> item
+	children map[K][]K // id -> ordered slice of child ids
+	parents  map[K][]K // id -> ordered slice of parent ids
+	edges    int       // Edge count
 }
 
 // New creates and returns a new [Graph].
@@ -40,7 +39,6 @@ func New[K comparable, T any]() *Graph[K, T] {
 	return &Graph[K, T]{
 		vertices: make(map[K]T),
 		children: make(map[K][]K),
-		childSet: make(map[K]map[K]struct{}),
 		parents:  make(map[K][]K),
 	}
 }
@@ -53,7 +51,6 @@ func WithCapacity[K comparable, T any](capacity int) *Graph[K, T] {
 	return &Graph[K, T]{
 		vertices: make(map[K]T, capacity),
 		children: make(map[K][]K, capacity),
-		childSet: make(map[K]map[K]struct{}, capacity),
 		parents:  make(map[K][]K, capacity),
 	}
 }
@@ -83,7 +80,6 @@ func (g *Graph[K, T]) AddVertex(id K, item T) error {
 
 	g.vertices[id] = item
 	g.children[id] = []K{}
-	g.childSet[id] = make(map[K]struct{})
 	g.parents[id] = []K{}
 
 	return nil
@@ -104,13 +100,11 @@ func (g *Graph[K, T]) RemoveVertex(id K) error {
 
 	for _, parent := range g.parents[id] {
 		g.children[parent] = removeFromSlice(g.children[parent], id)
-		delete(g.childSet[parent], id)
 		g.edges--
 	}
 
 	delete(g.vertices, id)
 	delete(g.children, id)
-	delete(g.childSet, id)
 	delete(g.parents, id)
 
 	return nil
@@ -164,7 +158,7 @@ func (g *Graph[K, T]) AddEdge(from, to K) error {
 		return fmt.Errorf("child vertex with id '%v': %w", to, ErrVertexNotFound)
 	}
 
-	if _, exists := g.childSet[from][to]; exists {
+	if exists := slices.Contains(g.children[from], to); exists {
 		return fmt.Errorf("'%v' -> '%v': %w", from, to, ErrEdgeExists)
 	}
 
@@ -173,7 +167,6 @@ func (g *Graph[K, T]) AddEdge(from, to K) error {
 	}
 
 	g.children[from] = append(g.children[from], to)
-	g.childSet[from][to] = struct{}{}
 	g.parents[to] = append(g.parents[to], from)
 	g.edges++
 
@@ -198,7 +191,6 @@ func (g *Graph[K, T]) RemoveEdge(from, to K) error {
 	}
 
 	g.children[from] = removeFromSlice(g.children[from], to)
-	delete(g.childSet[from], to)
 	g.parents[to] = removeFromSlice(g.parents[to], from)
 	g.edges--
 
@@ -207,8 +199,7 @@ func (g *Graph[K, T]) RemoveEdge(from, to K) error {
 
 // HasEdge reports whether a directed edge exists from 'from' to 'to'.
 func (g *Graph[K, T]) HasEdge(from, to K) bool {
-	_, exists := g.childSet[from][to]
-	return exists
+	return slices.Contains(g.children[from], to)
 }
 
 // Children returns an iterator over the direct children (immediate dependents) of the vertex with the given id.
