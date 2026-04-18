@@ -181,37 +181,123 @@ func TestMostCommon(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		c := counter.New[int]()
 
-		item, count := c.MostCommon()
-
-		test.Equal(t, item, 0)
-		test.Equal(t, count, 0)
+		test.True(t, c.MostCommon(0) == nil, test.Context("empty counter, n=0"))
+		test.True(t, c.MostCommon(1) == nil, test.Context("empty counter, n=1"))
+		test.True(t, c.MostCommon(-1) == nil, test.Context("empty counter, n=-1"))
 	})
 
-	t.Run("full", func(t *testing.T) {
+	t.Run("n=0", func(t *testing.T) {
+		c := counter.From([]string{"a", "a", "b"})
+
+		test.True(t, c.MostCommon(0) == nil)
+	})
+
+	t.Run("n=-1", func(t *testing.T) {
+		c := counter.From([]string{"a", "a", "b"})
+
+		test.True(t, c.MostCommon(-1) == nil)
+	})
+
+	t.Run("n=1", func(t *testing.T) {
 		names := []string{
-			"dave",
-			"dave",
-			"dave",
-			"dave",
-			"chris",
-			"chris",
-			"john",
-			"john",
-			"john",
-			"john",
-			"john",
+			"dave", "dave", "dave", "dave",
+			"chris", "chris",
+			"john", "john", "john", "john", "john",
 			"mark",
-			"alice",
-			"alice",
-			"alice",
+			"alice", "alice", "alice",
 		}
 
 		c := counter.From(names)
 
-		name, count := c.MostCommon()
+		got := c.MostCommon(1)
+		want := []counter.Pair[string]{{Item: "john", Count: 5}}
 
-		test.Equal(t, name, "john")
-		test.Equal(t, count, 5)
+		test.EqualFunc(t, got, want, slices.Equal)
+	})
+
+	t.Run("n less than size", func(t *testing.T) {
+		names := []string{
+			"dave", "dave", "dave", "dave",
+			"chris", "chris",
+			"john", "john", "john", "john", "john",
+			"mark",
+			"alice", "alice", "alice",
+		}
+
+		c := counter.From(names)
+
+		got := c.MostCommon(3)
+		want := []counter.Pair[string]{
+			{Item: "john", Count: 5},
+			{Item: "dave", Count: 4},
+			{Item: "alice", Count: 3},
+		}
+
+		test.EqualFunc(t, got, want, slices.Equal)
+	})
+
+	t.Run("n equal to size", func(t *testing.T) {
+		names := []string{
+			"dave", "dave", "dave", "dave",
+			"chris", "chris",
+			"john", "john", "john", "john", "john",
+			"mark",
+			"alice", "alice", "alice",
+		}
+
+		c := counter.From(names)
+
+		got := c.MostCommon(c.Size())
+		want := []counter.Pair[string]{
+			{Item: "john", Count: 5},
+			{Item: "dave", Count: 4},
+			{Item: "alice", Count: 3},
+			{Item: "chris", Count: 2},
+			{Item: "mark", Count: 1},
+		}
+
+		test.EqualFunc(t, got, want, slices.Equal)
+	})
+
+	t.Run("n greater than size", func(t *testing.T) {
+		names := []string{
+			"dave", "dave", "dave", "dave",
+			"chris", "chris",
+			"john", "john", "john", "john", "john",
+			"mark",
+			"alice", "alice", "alice",
+		}
+
+		c := counter.From(names)
+
+		got := c.MostCommon(c.Size() + 100)
+		want := []counter.Pair[string]{
+			{Item: "john", Count: 5},
+			{Item: "dave", Count: 4},
+			{Item: "alice", Count: 3},
+			{Item: "chris", Count: 2},
+			{Item: "mark", Count: 1},
+		}
+
+		test.EqualFunc(t, got, want, slices.Equal)
+	})
+
+	t.Run("ties", func(t *testing.T) {
+		// "apple" and "orange" both have count 2, "banana" has count 1.
+		// The order of the two tied items is explicitly not specified;
+		// we only assert that both appear in the top-2 result.
+		c := counter.From([]string{"apple", "apple", "orange", "orange", "banana"})
+
+		got := c.MostCommon(2)
+
+		test.Equal(t, len(got), 2)
+
+		items := []string{got[0].Item, got[1].Item}
+		slices.Sort(items)
+
+		test.EqualFunc(t, items, []string{"apple", "orange"}, slices.Equal)
+		test.Equal(t, got[0].Count, 2)
+		test.Equal(t, got[1].Count, 2)
 	})
 }
 
@@ -265,28 +351,27 @@ func TestItems(t *testing.T) {
 
 func BenchmarkMostCommon(b *testing.B) {
 	names := []string{
-		"dave",
-		"dave",
-		"dave",
-		"dave",
-		"chris",
-		"chris",
-		"john",
-		"john",
-		"john",
-		"john",
-		"john",
+		"dave", "dave", "dave", "dave",
+		"chris", "chris",
+		"john", "john", "john", "john", "john",
 		"mark",
-		"alice",
-		"alice",
-		"alice",
+		"alice", "alice", "alice",
 	}
 
 	c := counter.From(names)
 
-	for b.Loop() {
-		c.MostCommon()
-	}
+	b.Run("n=1", func(b *testing.B) {
+		for b.Loop() {
+			c.MostCommon(1)
+		}
+	})
+
+	b.Run("n=size", func(b *testing.B) {
+		n := c.Size()
+		for b.Loop() {
+			c.MostCommon(n)
+		}
+	})
 }
 
 func BenchmarkDescending(b *testing.B) {
