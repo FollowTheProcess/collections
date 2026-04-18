@@ -1,2 +1,3 @@
 [default.extend-words]
 decorder = "decorder" # Name of a Go linter
+anc = "anc" # Short for ancestor
