@@ -20,7 +20,7 @@ func TestIsEmpty(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	test.False(t, s.IsEmpty()) // Empty should not be false
+	test.False(t, s.IsEmpty(), test.Context("Empty should not be false"))
 }
 
 func TestPop(t *testing.T) {
@@ -48,8 +48,8 @@ func TestPop(t *testing.T) {
 
 	// Try one more pop, should error
 	item, err = s.Pop()
-	test.Err(t, err)        // Pop from empty stack should error
-	test.Equal(t, item, "") // Item should be the zero value
+	test.Err(t, err, test.Context("Pop from empty stack should error"))
+	test.Equal(t, item, "", test.Context("Item should be the zero value"))
 }
 
 func TestNotNew(t *testing.T) {

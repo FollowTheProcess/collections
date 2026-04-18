@@ -10,7 +10,7 @@ import (
 
 func TestNew(t *testing.T) {
 	chain := chain.New[int, string]()
-	test.Equal(t, chain.Size(), 0) // Wrong chain size before
+	test.Equal(t, chain.Size(), 0, test.Context("Wrong chain size before"))
 }
 
 func TestFrom(t *testing.T) {
@@ -21,7 +21,7 @@ func TestFrom(t *testing.T) {
 	}
 
 	chain := chain.From(maps)
-	test.Equal(t, chain.Size(), 3) // Wrong size (From)
+	test.Equal(t, chain.Size(), 3, test.Context("Wrong size (From)"))
 }
 
 func TestCollect(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCollect(t *testing.T) {
 	}
 
 	chain := chain.Collect(slices.Values(maps))
-	test.Equal(t, chain.Size(), 3) // Wrong size (Collect)
+	test.Equal(t, chain.Size(), 3, test.Context("Wrong size (Collect)"))
 }
 
 func TestAppendGet(t *testing.T) {
@@ -57,7 +57,7 @@ func TestAppendGet(t *testing.T) {
 
 	chain.Append(one)
 
-	test.Equal(t, chain.Size(), 1) // Wrong chain size after append
+	test.Equal(t, chain.Size(), 1, test.Context("Wrong chain size after append"))
 
 	got, ok := chain.Get(1)
 	test.True(t, ok)
@@ -67,15 +67,15 @@ func TestAppendGet(t *testing.T) {
 
 	got, ok = chain.Get(1)
 	test.True(t, ok)
-	test.Equal(t, got, "one in first map") // Higher priority
+	test.Equal(t, got, "one in first map", test.Context("Higher priority"))
 
 	got, ok = chain.Get(2)
 	test.True(t, ok)
-	test.Equal(t, got, "two in first map") // Two is in higher priority map
+	test.Equal(t, got, "two in first map", test.Context("Two is in higher priority map"))
 
 	got, ok = chain.Get(3)
 	test.True(t, ok)
-	test.Equal(t, got, "three in second map") // Three is in second map
+	test.Equal(t, got, "three in second map", test.Context("Three is in second map"))
 
 	chain.Append(three)
 
@@ -85,10 +85,10 @@ func TestAppendGet(t *testing.T) {
 
 	got, ok = chain.Get(4)
 	test.True(t, ok)
-	test.Equal(t, got, "four in third map") // Four only exists in 3rd map
+	test.Equal(t, got, "four in third map", test.Context("Four only exists in 3rd map"))
 
 	got, ok = chain.Get(5)
-	test.False(t, ok) // There is no 5
+	test.False(t, ok, test.Context("There is no 5"))
 	test.Equal(t, got, "")
 }
 
@@ -114,7 +114,7 @@ func TestPrependGet(t *testing.T) {
 
 	chain.Prepend(one)
 
-	test.Equal(t, chain.Size(), 1) // Wrong chain size after prepend
+	test.Equal(t, chain.Size(), 1, test.Context("Wrong chain size after prepend"))
 
 	got, ok := chain.Get(1)
 	test.True(t, ok)
@@ -124,28 +124,28 @@ func TestPrependGet(t *testing.T) {
 
 	got, ok = chain.Get(1)
 	test.True(t, ok)
-	test.Equal(t, got, "one in second map") // Prepended has higher priority
+	test.Equal(t, got, "one in second map", test.Context("Prepended has higher priority"))
 
 	got, ok = chain.Get(2)
 	test.True(t, ok)
-	test.Equal(t, got, "two in second map") // Two is in higher priority map
+	test.Equal(t, got, "two in second map", test.Context("Two is in higher priority map"))
 
 	got, ok = chain.Get(3)
 	test.True(t, ok)
-	test.Equal(t, got, "three in second map") // Three is in second map
+	test.Equal(t, got, "three in second map", test.Context("Three is in second map"))
 
 	chain.Prepend(three)
 
 	got, ok = chain.Get(1)
 	test.True(t, ok)
-	test.Equal(t, got, "one in third map") // Third map is now highest priority
+	test.Equal(t, got, "one in third map", test.Context("Third map is now highest priority"))
 
 	got, ok = chain.Get(4)
 	test.True(t, ok)
-	test.Equal(t, got, "four in third map") // Four only exists in 3rd map
+	test.Equal(t, got, "four in third map", test.Context("Four only exists in 3rd map"))
 
 	got, ok = chain.Get(5)
-	test.False(t, ok) // There is no 5
+	test.False(t, ok, test.Context("There is no 5"))
 	test.Equal(t, got, "")
 }
 
@@ -171,8 +171,8 @@ func TestInsert(t *testing.T) {
 	chain := chain.From(maps)
 
 	got, existed := chain.Insert(1, "updated one in first map")
-	test.True(t, existed)                  // 1 exists in first map
-	test.Equal(t, got, "one in first map") // Returned value should be the old value
+	test.True(t, existed, test.Context("1 exists in first map"))
+	test.Equal(t, got, "one in first map", test.Context("Returned value should be the old value"))
 
 	// If we get it now we should get the updated one
 	got, ok := chain.Get(1)
@@ -237,19 +237,19 @@ func TestRemove(t *testing.T) {
 
 	got, existed := chain.Remove(1)
 	test.True(t, existed)
-	test.Equal(t, got, "one in first map") // Remove should remove 1 from the first map
+	test.Equal(t, got, "one in first map", test.Context("Remove should remove 1 from the first map"))
 
 	got, existed = chain.Remove(1)
 	test.True(t, existed)
-	test.Equal(t, got, "one in second map") // Now the second map
+	test.Equal(t, got, "one in second map", test.Context("Now the second map"))
 
 	got, existed = chain.Remove(1)
 	test.True(t, existed)
-	test.Equal(t, got, "one in third map") // Now the third map
+	test.Equal(t, got, "one in third map", test.Context("Now the third map"))
 
 	got, existed = chain.Remove(1)
 	test.False(t, existed)
-	test.Equal(t, got, "") // No more 1's left
+	test.Equal(t, got, "", test.Context("No more 1's left"))
 
 	got, existed = chain.Get(1)
 	test.False(t, existed)

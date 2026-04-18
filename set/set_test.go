@@ -14,12 +14,12 @@ func TestInsert(t *testing.T) {
 	t.Run("strings", func(t *testing.T) {
 		s := set.New[string]()
 
-		test.True(t, s.IsEmpty()) // Initial set was not empty
+		test.True(t, s.IsEmpty(), test.Context("Initial set was not empty"))
 
-		test.True(t, s.Insert("foo"))    // Inserting foo for the first time should return true
-		test.False(t, s.Insert("foo"))   // Second insert of foo should return false
-		test.True(t, s.Contains("foo"))  // Set didn't contain "foo"
-		test.False(t, s.Contains("bar")) // Set said it contained "bar" but shouldn't have
+		test.True(t, s.Insert("foo"), test.Context("Inserting foo for the first time should return true"))
+		test.False(t, s.Insert("foo"), test.Context("Second insert of foo should return false"))
+		test.True(t, s.Contains("foo"), test.Context("Set didn't contain \"foo\""))
+		test.False(t, s.Contains("bar"), test.Context("Set said it contained \"bar\" but shouldn't have"))
 
 		// testing nil safety
 		danger := &set.Set[string]{}
@@ -30,10 +30,10 @@ func TestInsert(t *testing.T) {
 	t.Run("ints", func(t *testing.T) {
 		s := set.New[int]()
 
-		test.True(t, s.Insert(1))    // Inserting 1 for the first time should return true
-		test.False(t, s.Insert(1))   // Second insert of 1 should return false
-		test.True(t, s.Contains(1))  // Set didn't contain 1
-		test.False(t, s.Contains(2)) // Set said it contained 2 but shouldn't have
+		test.True(t, s.Insert(1), test.Context("Inserting 1 for the first time should return true"))
+		test.False(t, s.Insert(1), test.Context("Second insert of 1 should return false"))
+		test.True(t, s.Contains(1), test.Context("Set didn't contain 1"))
+		test.False(t, s.Contains(2), test.Context("Set said it contained 2 but shouldn't have"))
 
 		// testing nil safety
 		danger := &set.Set[int]{}
@@ -49,10 +49,10 @@ func TestFrom(t *testing.T) {
 		items := []string{"foo", "bar", "baz"}
 		other := set.From(items)
 
-		test.True(t, other.Contains("foo"))      // Set from items didn't contain "foo"
-		test.True(t, other.Contains("bar"))      // Set from items didn't contain "bar"
-		test.True(t, other.Contains("baz"))      // Set from items didn't contain "baz"
-		test.False(t, other.Contains("missing")) // Missing item "missing" reported as present
+		test.True(t, other.Contains("foo"), test.Context("Set from items didn't contain \"foo\""))
+		test.True(t, other.Contains("bar"), test.Context("Set from items didn't contain \"bar\""))
+		test.True(t, other.Contains("baz"), test.Context("Set from items didn't contain \"baz\""))
+		test.False(t, other.Contains("missing"), test.Context("Missing item \"missing\" reported as present"))
 	})
 
 	t.Run("floats", func(t *testing.T) {
@@ -60,10 +60,10 @@ func TestFrom(t *testing.T) {
 		items := []float64{3.14159, 42.58, 69.73}
 		other := set.From(items)
 
-		test.True(t, other.Contains(3.14159)) // Set from items didn't contain pi
-		test.True(t, other.Contains(42.58))   // Set from items didn't contain 42.58
-		test.True(t, other.Contains(69.73))   // Set from items didn't contain 69.73
-		test.False(t, other.Contains(100.1))  // Missing item 100.1 reported as present
+		test.True(t, other.Contains(3.14159), test.Context("Set from items didn't contain pi"))
+		test.True(t, other.Contains(42.58), test.Context("Set from items didn't contain 42.58"))
+		test.True(t, other.Contains(69.73), test.Context("Set from items didn't contain 69.73"))
+		test.False(t, other.Contains(100.1), test.Context("Missing item 100.1 reported as present"))
 	})
 }
 
@@ -89,13 +89,13 @@ func TestRemove(t *testing.T) {
 		set.Insert(gandalf)
 		set.Insert(wendy)
 
-		test.Equal(t, set.Size(), 3) // Incorrect size
+		test.Equal(t, set.Size(), 3, test.Context("Incorrect size"))
 
 		// Sorry Wendy
 		removed := set.Remove(wendy)
-		test.True(t, removed) // Removed should be true
+		test.True(t, removed, test.Context("Removed should be true"))
 
-		test.Equal(t, set.Size(), 2) // Incorrect size after killing wendy
+		test.Equal(t, set.Size(), 2, test.Context("Incorrect size after killing wendy"))
 
 		test.False(t, set.Contains(wendy))
 	})

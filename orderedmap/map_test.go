@@ -14,53 +14,69 @@ import (
 func TestGetInsert(t *testing.T) {
 	m := orderedmap.New[string, string]()
 
-	test.Equal(t, m.Size(), 0) // Starting size should be 0
+	test.Equal(t, m.Size(), 0, test.Context("Starting size should be 0"))
 
 	missing, ok := m.Get("missing")
-	test.False(t, ok)          // Missing item should return ok = false
-	test.Equal(t, missing, "") // Value should be zero value
+	test.False(t, ok, test.Context("Missing item should return ok = false"))
+	test.Equal(t, missing, "", test.Context("Value should be zero value"))
 
 	val, existed := m.Insert("new", "item")
-	test.False(t, existed)     // Insert of a new item should return false
-	test.Equal(t, val, "item") // Insert of new item should return item
+	test.False(t, existed, test.Context("Insert of a new item should return false"))
+	test.Equal(t, val, "item", test.Context("Insert of new item should return item"))
 
-	test.Equal(t, m.Size(), 1) // Wrong size, should contain 1 new item
+	test.Equal(t, m.Size(), 1, test.Context("Wrong size, should contain 1 new item"))
 
 	item, ok := m.Get("new")
-	test.True(t, ok)            // new should exist in the map
-	test.Equal(t, item, "item") // Retrieved item should be "item"
+	test.True(t, ok)
+	test.Equal(t, item, "item", test.Context("Retrieved item should be \"item\""))
 
 	old, existed := m.Insert("new", "other item")
-	test.True(t, existed)      // Item should have existed
-	test.Equal(t, old, "item") // Old item should be item
+	test.True(t, existed, test.Context("Item should have existed"))
+	test.Equal(t, old, "item", test.Context("Old item should be item"))
 
-	test.Equal(t, m.Size(), 1) // Wrong size, should contain 2 new items
+	test.Equal(t, m.Size(), 1, test.Context("Wrong size, should contain 2 new items"))
 
 	val, ok = m.Get("new")
-	test.True(t, ok)                 // Item should have existed
-	test.Equal(t, val, "other item") // The new value should be returned from Get
+	test.True(t, ok, test.Context("Item should have existed"))
+	test.Equal(t, val, "other item", test.Context("The new value should be returned from Get"))
+}
+
+func TestInsertRemove(t *testing.T) {
+	m := orderedmap.New[int, string]()
+
+	test.Equal(t, m.Size(), 0, test.Context("Wrong initial size"))
+
+	m.Insert(1, "one")
+
+	test.Equal(t, m.Size(), 1, test.Context("Wrong size after inserts"))
+
+	one, existed := m.Remove(1)
+	test.True(t, existed, test.Context("1 should have existed in the map"))
+	test.Equal(t, one, "one", test.Context("Wrong value returned from Remove"))
+
+	test.Equal(t, m.Size(), 0, test.Context("Wrong size after removal"))
 }
 
 func TestRemove(t *testing.T) {
 	m := orderedmap.New[int, string]()
 
-	test.Equal(t, m.Size(), 0) // Wrong initial size
+	test.Equal(t, m.Size(), 0, test.Context("Wrong initial size"))
 
 	missing, existed := m.Remove(42)
-	test.False(t, existed)     // existed should be false
-	test.Equal(t, missing, "") // should be zero value
+	test.False(t, existed, test.Context("existed should be false"))
+	test.Equal(t, missing, "", test.Context("should be zero value"))
 
 	m.Insert(1, "one")
 	m.Insert(2, "two")
 	m.Insert(3, "three")
 
-	test.Equal(t, m.Size(), 3) // Wrong size after inserts
+	test.Equal(t, m.Size(), 3, test.Context("Wrong size after inserts"))
 
 	two, existed := m.Remove(2)
-	test.True(t, existed)     // 2 should have existed in the map
-	test.Equal(t, two, "two") // Wrong value returned from Remove
+	test.True(t, existed, test.Context("2 should have existed in the map"))
+	test.Equal(t, two, "two", test.Context("Wrong value returned from Remove"))
 
-	test.Equal(t, m.Size(), 2) // Wrong size after removal
+	test.Equal(t, m.Size(), 2, test.Context("Wrong size after removal"))
 }
 
 func TestOldest(t *testing.T) {
@@ -79,8 +95,8 @@ func TestOldest(t *testing.T) {
 
 	oldestKey, oldestValue, ok = m.Oldest()
 	test.True(t, ok)
-	test.Equal(t, oldestKey, 1)       // Wrong oldest key
-	test.Equal(t, oldestValue, "one") // Wrong oldest value
+	test.Equal(t, oldestKey, 1, test.Context("Wrong oldest key"))
+	test.Equal(t, oldestValue, "one", test.Context("Wrong oldest value"))
 }
 
 func TestNewest(t *testing.T) {
@@ -99,26 +115,26 @@ func TestNewest(t *testing.T) {
 
 	newestKey, newestValue, ok = m.Newest()
 	test.True(t, ok)
-	test.Equal(t, newestKey, 4)        // Wrong newest key
-	test.Equal(t, newestValue, "four") // Wrong newest value
+	test.Equal(t, newestKey, 4, test.Context("Wrong newest key"))
+	test.Equal(t, newestValue, "four", test.Context("Wrong newest value"))
 }
 
 func TestGetOrInsert(t *testing.T) {
 	m := orderedmap.New[string, int]()
 
 	one, existed := m.GetOrInsert("one", 1)
-	test.False(t, existed) // should not have existed
-	test.Equal(t, one, 1)  // wrong value
+	test.False(t, existed, test.Context("should not have existed"))
+	test.Equal(t, one, 1, test.Context("wrong value"))
 
 	// Try again with same value
 	one, existed = m.GetOrInsert("one", 1)
-	test.True(t, existed) // should have existed this time
+	test.True(t, existed, test.Context("should have existed this time"))
 	test.Equal(t, one, 1)
 
 	// And again with different value
 	one, existed = m.GetOrInsert("one", 100)
-	test.True(t, existed) // should also exist
-	test.Equal(t, one, 1) // wrong value
+	test.True(t, existed, test.Context("should also exist"))
+	test.Equal(t, one, 1, test.Context("wrong value"))
 }
 
 func TestContains(t *testing.T) {
@@ -127,8 +143,8 @@ func TestContains(t *testing.T) {
 	m.Insert("two", 2)
 	m.Insert("three", 3)
 
-	test.True(t, m.Contains("one"))   // Map should contain "one"
-	test.False(t, m.Contains("four")) // "four" is not in the map
+	test.True(t, m.Contains("one"), test.Context("Map should contain \"one\""))
+	test.False(t, m.Contains("four"), test.Context("\"four\" is not in the map"))
 }
 
 func TestItems(t *testing.T) {

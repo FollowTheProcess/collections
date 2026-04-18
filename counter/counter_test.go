@@ -12,19 +12,19 @@ import (
 func TestNewCounter(t *testing.T) {
 	c := counter.New[string]()
 
-	test.Equal(t, c.Size(), 0) // Initial size must be empty
+	test.Equal(t, c.Size(), 0, test.Context("Initial size must be empty"))
 
-	test.Equal(t, c.Add("apple"), 1) // First add returns 1
-	test.Equal(t, c.Add("apple"), 2) // Second add returns 2
+	test.Equal(t, c.Add("apple"), 1, test.Context("First add returns 1"))
+	test.Equal(t, c.Add("apple"), 2, test.Context("Second add returns 2"))
 
-	test.Equal(t, c.Size(), 1) // "apple" should be the only item
+	test.Equal(t, c.Size(), 1, test.Context("\"apple\" should be the only item"))
 
-	test.Equal(t, c.Add("orange"), 1) // First add returns 1 (orange)
+	test.Equal(t, c.Add("orange"), 1, test.Context("First add returns 1 (orange)"))
 
-	test.Equal(t, c.Size(), 2) // should now have 2 items
+	test.Equal(t, c.Size(), 2, test.Context("should now have 2 items"))
 
-	test.Equal(t, c.Sub("orange"), 0) // Sub("orange") should remove orange completely
-	test.Equal(t, c.Sub("apple"), 1)  // Sub("apple") should decrement apple to 1
+	test.Equal(t, c.Sub("orange"), 0, test.Context("Sub(\"orange\") should remove orange completely"))
+	test.Equal(t, c.Sub("apple"), 1, test.Context("Sub(\"apple\") should decrement apple to 1"))
 }
 
 func TestCount(t *testing.T) {
@@ -34,9 +34,9 @@ func TestCount(t *testing.T) {
 	c.Add("human")
 	c.Add("dog")
 
-	test.Equal(t, c.Get("human"), 2) // Wrong number of humans
-	test.Equal(t, c.Get("dog"), 1)   // Wrong number of dogs
-	test.Equal(t, c.Get("cats"), 0)  // No cats in the counter
+	test.Equal(t, c.Get("human"), 2, test.Context("Wrong number of humans"))
+	test.Equal(t, c.Get("dog"), 1, test.Context("Wrong number of dogs"))
+	test.Equal(t, c.Get("cats"), 0, test.Context("No cats in the counter"))
 }
 
 func TestFrom(t *testing.T) {
@@ -44,15 +44,15 @@ func TestFrom(t *testing.T) {
 
 	c := counter.From(items)
 
-	test.Equal(t, c.Size(), 8)  // Wrong size
-	test.Equal(t, c.Get(1), 1)  // Wrong number of 1s
-	test.Equal(t, c.Get(2), 2)  // Wrong number of 2s
-	test.Equal(t, c.Get(3), 1)  // Wrong number of 4s
-	test.Equal(t, c.Get(4), 3)  // Wrong number of 4s
-	test.Equal(t, c.Get(5), 2)  // Wrong number of 5s
-	test.Equal(t, c.Get(6), 1)  // Wrong number of 6s
-	test.Equal(t, c.Get(8), 1)  // Wrong number of 8s
-	test.Equal(t, c.Get(12), 1) // Wrong number of 12s
+	test.Equal(t, c.Size(), 8, test.Context("Wrong size"))
+	test.Equal(t, c.Get(1), 1, test.Context("Wrong number of 1s"))
+	test.Equal(t, c.Get(2), 2, test.Context("Wrong number of 2s"))
+	test.Equal(t, c.Get(3), 1, test.Context("Wrong number of 4s"))
+	test.Equal(t, c.Get(4), 3, test.Context("Wrong number of 4s"))
+	test.Equal(t, c.Get(5), 2, test.Context("Wrong number of 5s"))
+	test.Equal(t, c.Get(6), 1, test.Context("Wrong number of 6s"))
+	test.Equal(t, c.Get(8), 1, test.Context("Wrong number of 8s"))
+	test.Equal(t, c.Get(12), 1, test.Context("Wrong number of 12s"))
 }
 
 func TestCollect(t *testing.T) {
@@ -60,15 +60,15 @@ func TestCollect(t *testing.T) {
 
 	c := counter.Collect(slices.Values(items))
 
-	test.Equal(t, c.Size(), 8)  // Wrong size
-	test.Equal(t, c.Get(1), 1)  // Wrong number of 1s
-	test.Equal(t, c.Get(2), 2)  // Wrong number of 2s
-	test.Equal(t, c.Get(3), 1)  // Wrong number of 4s
-	test.Equal(t, c.Get(4), 3)  // Wrong number of 4s
-	test.Equal(t, c.Get(5), 2)  // Wrong number of 5s
-	test.Equal(t, c.Get(6), 1)  // Wrong number of 6s
-	test.Equal(t, c.Get(8), 1)  // Wrong number of 8s
-	test.Equal(t, c.Get(12), 1) // Wrong number of 12s
+	test.Equal(t, c.Size(), 8, test.Context("Wrong size"))
+	test.Equal(t, c.Get(1), 1, test.Context("Wrong number of 1s"))
+	test.Equal(t, c.Get(2), 2, test.Context("Wrong number of 2s"))
+	test.Equal(t, c.Get(3), 1, test.Context("Wrong number of 4s"))
+	test.Equal(t, c.Get(4), 3, test.Context("Wrong number of 4s"))
+	test.Equal(t, c.Get(5), 2, test.Context("Wrong number of 5s"))
+	test.Equal(t, c.Get(6), 1, test.Context("Wrong number of 6s"))
+	test.Equal(t, c.Get(8), 1, test.Context("Wrong number of 8s"))
+	test.Equal(t, c.Get(12), 1, test.Context("Wrong number of 12s"))
 }
 
 func TestRemove(t *testing.T) {
@@ -88,12 +88,12 @@ func TestRemove(t *testing.T) {
 
 	tom := person{name: "Tom", age: 30}
 
-	test.Equal(t, c.Size(), 3) // Wrong size
+	test.Equal(t, c.Size(), 3, test.Context("Wrong size"))
 
-	test.Equal(t, c.Remove(tom), 2) // Wrong number of Toms before remove
-	test.Equal(t, c.Get(tom), 0)    // Wrong number of Toms after remove
+	test.Equal(t, c.Remove(tom), 2, test.Context("Wrong number of Toms before remove"))
+	test.Equal(t, c.Get(tom), 0, test.Context("Wrong number of Toms after remove"))
 
-	test.Equal(t, c.Remove(person{name: "missing", age: 35}), 0) // Missing person returns 0
+	test.Equal(t, c.Remove(person{name: "missing", age: 35}), 0, test.Context("Missing person returns 0"))
 }
 
 func TestSum(t *testing.T) {
@@ -131,13 +131,13 @@ func TestReset(t *testing.T) {
 
 	c := counter.From(fruits)
 
-	test.Equal(t, c.Size(), 7)          // Wrong size before Reset
-	test.Equal(t, c.Sum(), len(fruits)) // Wrong sum before Reset
+	test.Equal(t, c.Size(), 7, test.Context("Wrong size before Reset"))
+	test.Equal(t, c.Sum(), len(fruits), test.Context("Wrong sum before Reset"))
 
 	c.Reset()
 
-	test.Equal(t, c.Size(), 0) // Wrong size after Reset
-	test.Equal(t, c.Sum(), 0)  // Wrong sum after Reset
+	test.Equal(t, c.Size(), 0, test.Context("Wrong size after Reset"))
+	test.Equal(t, c.Sum(), 0, test.Context("Wrong sum after Reset"))
 }
 
 func TestDescending(t *testing.T) {
