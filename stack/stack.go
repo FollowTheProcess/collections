@@ -80,6 +80,8 @@ func (s *Stack[T]) Pop() (T, error) {
 	}
 
 	item := s.container[l-1]
+	var zero T
+	s.container[l-1] = zero // for GC, otherwise this element might still be reachable
 	s.container = s.container[:l-1]
 
 	return item, nil
