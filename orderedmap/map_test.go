@@ -166,6 +166,36 @@ func TestUpdateDoesNotReorder(t *testing.T) {
 	test.Equal(t, newestKey, "c", test.Context("Updating an existing key must not move it to newest"))
 }
 
+// TestInsertRemoveChurnReusesSlots exercises repeated insert/remove cycles
+// on a single key. The ordered map must remain consistent: size goes
+// 1 → 0 → 1 → 0 ..., Oldest/Newest track the live key, and iteration
+// yields exactly the one live entry each cycle. This is a regression
+// guard for the arena freelist: a stale slot must not leak back into
+// the live list and must not double-insert into the key→index map.
+func TestInsertRemoveChurnReusesSlots(t *testing.T) {
+	m := orderedmap.New[int, string]()
+
+	for i := range 1000 {
+		m.Insert(i, "v")
+		test.Equal(t, m.Size(), 1, test.Context("size after insert"))
+
+		k, _, ok := m.Oldest()
+		test.True(t, ok)
+		test.Equal(t, k, i, test.Context("oldest tracks the live key"))
+
+		kn, _, okn := m.Newest()
+		test.True(t, okn)
+		test.Equal(t, kn, i, test.Context("newest tracks the live key"))
+
+		keys := slices.Collect(m.Keys())
+		test.EqualFunc(t, keys, []int{i}, slices.Equal)
+
+		_, existed := m.Remove(i)
+		test.True(t, existed)
+		test.Equal(t, m.Size(), 0, test.Context("size after remove"))
+	}
+}
+
 func TestOldest(t *testing.T) {
 	m := orderedmap.New[int, string]()
 
@@ -383,4 +413,48 @@ func BenchmarkRemove(b *testing.B) {
 			m.Remove("hello") // Doesn't exist, remove should be a no-op
 		}
 	})
+}
+
+// BenchmarkAll measures iteration throughput — the primary win from the
+// arena refactor, since entries live contiguously in a slice rather than
+// spread across separately-allocated list nodes.
+func BenchmarkAll(b *testing.B) {
+	const n = 10_000
+
+	m := orderedmap.New[int, int]()
+	for i := range n {
+		m.Insert(i, i)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for b.Loop() {
+		var sum int
+		for _, v := range m.All() {
+			sum += v
+		}
+
+		// Prevent the compiler from eliminating the loop.
+		if sum < 0 {
+			b.Fatal("unreachable")
+		}
+	}
+}
+
+// BenchmarkChurn exercises the arena's freelist — repeatedly inserting
+// and removing the same keys should reuse slots and allocate nothing
+// once the slice has grown.
+func BenchmarkChurn(b *testing.B) {
+	m := orderedmap.New[int, int]()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	i := 0
+	for b.Loop() {
+		m.Insert(i, i)
+		m.Remove(i)
+		i++
+	}
 }

@@ -5,30 +5,40 @@
 // synchronising concurrent access.
 package orderedmap // import "go.followtheprocess.codes/collections/orderedmap"
 
-import (
-	"iter"
+import "iter"
 
-	"go.followtheprocess.codes/collections/list"
-)
+// none is the sentinel used for "no neighbour" and "no free slot". Real
+// slot indices are always non-negative.
+const none = -1
 
-// entry is a single key, value pair entry in the map.
+// entry is one slot in the arena. When the slot is live, prev and next
+// are indices of the neighbouring live entries in insertion order (or
+// none at the ends). When the slot is on the freelist, next points to
+// the next free slot and prev is unused.
 type entry[K comparable, V any] struct {
-	key   K                        // The key, used to look the entry up in the inner map
-	value V                        // The value
-	node  *list.Node[*entry[K, V]] // The node in the linked list storing this entry
+	key   K
+	value V
+	prev  int
+	next  int
 }
 
 // Map is an ordered map.
 type Map[K comparable, V any] struct {
-	inner map[K]*entry[K, V]       // The backing hashmap
-	list  *list.List[*entry[K, V]] // The linked list keeping track of insertion order
+	inner   map[K]int     // key -> index into entries
+	entries []entry[K, V] // arena of entries
+	head    int           // index of oldest live entry, or none
+	tail    int           // index of newest live entry, or none
+	free    int           // head of the freelist, or none
+	size    int           // count of live entries
 }
 
 // New creates and returns a new ordered map.
 func New[K comparable, V any]() *Map[K, V] {
 	return &Map[K, V]{
-		inner: make(map[K]*entry[K, V]),
-		list:  list.New[*entry[K, V]](),
+		inner: make(map[K]int),
+		head:  none,
+		tail:  none,
+		free:  none,
 	}
 }
 
@@ -38,9 +48,75 @@ func New[K comparable, V any]() *Map[K, V] {
 // is known ahead of time as it eliminates the need for reallocation.
 func WithCapacity[K comparable, V any](capacity int) *Map[K, V] {
 	return &Map[K, V]{
-		inner: make(map[K]*entry[K, V], capacity),
-		list:  list.New[*entry[K, V]](),
+		inner:   make(map[K]int, capacity),
+		entries: make([]entry[K, V], 0, capacity),
+		head:    none,
+		tail:    none,
+		free:    none,
 	}
+}
+
+// allocSlot returns the index of a slot to use for a new entry. It pops
+// from the freelist if possible, otherwise grows the arena.
+func (m *Map[K, V]) allocSlot() int {
+	if m.free != none {
+		idx := m.free
+		m.free = m.entries[idx].next
+
+		return idx
+	}
+
+	m.entries = append(m.entries, entry[K, V]{})
+
+	return len(m.entries) - 1
+}
+
+// linkAtTail appends the slot at idx to the tail of the insertion-order
+// list. The slot's key and value must already be set by the caller.
+func (m *Map[K, V]) linkAtTail(idx int) {
+	if m.tail == none {
+		m.entries[idx].prev = none
+		m.entries[idx].next = none
+		m.head = idx
+		m.tail = idx
+
+		return
+	}
+
+	m.entries[idx].prev = m.tail
+	m.entries[idx].next = none
+	m.entries[m.tail].next = idx
+	m.tail = idx
+}
+
+// unlink removes the slot at idx from the insertion-order list, clears
+// its key/value so the backing array cannot retain references, and
+// pushes it onto the freelist.
+func (m *Map[K, V]) unlink(idx int) {
+	prev := m.entries[idx].prev
+	next := m.entries[idx].next
+
+	if prev != none {
+		m.entries[prev].next = next
+	} else {
+		m.head = next
+	}
+
+	if next != none {
+		m.entries[next].prev = prev
+	} else {
+		m.tail = prev
+	}
+
+	var zeroK K
+
+	var zeroV V
+
+	m.entries[idx].key = zeroK
+	m.entries[idx].value = zeroV
+	m.entries[idx].prev = none
+	m.entries[idx].next = m.free
+	m.free = idx
 }
 
 // Get returns the value stored against the given key in the map and a boolean
@@ -49,23 +125,21 @@ func WithCapacity[K comparable, V any](capacity int) *Map[K, V] {
 // If the requested key wasn't in the map, the zero value for the item and false are returned.
 // If the key was present, the item and true are returned.
 func (m *Map[K, V]) Get(key K) (value V, ok bool) {
-	var zero V
-
-	val, exists := m.inner[key]
+	idx, exists := m.inner[key]
 	if !exists {
+		var zero V
+
 		return zero, false
 	}
 
-	return val.value, true
+	return m.entries[idx].value, true
 }
 
 // Contains reports whether the map contains the given key.
 func (m *Map[K, V]) Contains(key K) bool {
-	if _, exists := m.inner[key]; exists {
-		return true
-	}
+	_, exists := m.inner[key]
 
-	return false
+	return exists
 }
 
 // Insert inserts a new value into the map against the given key, returning the previous
@@ -77,22 +151,19 @@ func (m *Map[K, V]) Contains(key K) bool {
 // If the map did have this key, and this call to Insert is therefore an update of an existing value,
 // then the old value and true are returned.
 func (m *Map[K, V]) Insert(key K, value V) (val V, existed bool) {
-	if old, exists := m.inner[key]; exists {
-		// The item exists, this is therefore an update
-		oldValue := old.value // Take a copy so we can return it
-		old.value = value     // Set the new value back
+	if idx, exists := m.inner[key]; exists {
+		oldValue := m.entries[idx].value
+		m.entries[idx].value = value
 
 		return oldValue, true
 	}
 
-	// The item didn't exist, this is a brand new insertion
-	e := &entry[K, V]{
-		key:   key,
-		value: value,
-	}
-
-	e.node = m.list.Append(e)
-	m.inner[key] = e
+	idx := m.allocSlot()
+	m.entries[idx].key = key
+	m.entries[idx].value = value
+	m.linkAtTail(idx)
+	m.inner[key] = idx
+	m.size++
 
 	return value, false
 }
@@ -103,53 +174,49 @@ func (m *Map[K, V]) Insert(key K, value V) (val V, existed bool) {
 // If the value was in the map, the removed value and true are returned, if not
 // the zero value for the value type and false are returned.
 func (m *Map[K, V]) Remove(key K) (value V, existed bool) {
-	if entry, existed := m.inner[key]; existed {
-		m.list.Remove(entry.node) // Drop it from our list
-		delete(m.inner, key)      // And the map
+	idx, exists := m.inner[key]
+	if !exists {
+		var zero V
 
-		return entry.value, true
+		return zero, false
 	}
 
-	// Didn't exist, just return
-	var zero V
+	val := m.entries[idx].value
+	delete(m.inner, key)
+	m.unlink(idx)
+	m.size--
 
-	return zero, false
+	return val, true
 }
 
 // Size returns the number of items currently stored in the map. This operation
 // is O(1).
 func (m *Map[K, V]) Size() int {
-	return m.list.Len()
+	return m.size
 }
 
 // Oldest returns the oldest key, value pair in the map, i.e. the pair
 // that was inserted first. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
-	node, exists := m.list.First()
-	if !exists {
-		var zeroKey K
-
-		var zeroVal V
-
-		return zeroKey, zeroVal, false
+	if m.head == none {
+		return key, value, ok
 	}
 
-	return node.Item().key, node.Item().value, true
+	e := m.entries[m.head]
+
+	return e.key, e.value, true
 }
 
 // Newest returns the newest key, value pair in the map, i.e. the pair that
 // was inserted last. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
-	node, exists := m.list.Last()
-	if !exists {
-		var zeroKey K
-
-		var zeroVal V
-
-		return zeroKey, zeroVal, false
+	if m.tail == none {
+		return key, value, ok
 	}
 
-	return node.Item().key, node.Item().value, true
+	e := m.entries[m.tail]
+
+	return e.key, e.value, true
 }
 
 // GetOrInsert fetches a value by it's key if it is present in the map, and if not
@@ -157,19 +224,16 @@ func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
 //
 // The returned boolean reports whether the key already existed.
 func (m *Map[K, V]) GetOrInsert(key K, value V) (val V, existed bool) {
-	if entry, exists := m.inner[key]; exists {
-		// Already in the map, return the value
-		return entry.value, true
+	if idx, exists := m.inner[key]; exists {
+		return m.entries[idx].value, true
 	}
 
-	// The item didn't exist, this is a brand new insertion
-	e := &entry[K, V]{
-		key:   key,
-		value: value,
-	}
-
-	e.node = m.list.Append(e)
-	m.inner[key] = e
+	idx := m.allocSlot()
+	m.entries[idx].key = key
+	m.entries[idx].value = value
+	m.linkAtTail(idx)
+	m.inner[key] = idx
+	m.size++
 
 	return value, false
 }
@@ -178,8 +242,9 @@ func (m *Map[K, V]) GetOrInsert(key K, value V) (val V, existed bool) {
 // in the order in which they were inserted.
 func (m *Map[K, V]) All() iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
-		for item := range m.list.All() {
-			if !yield(item.key, item.value) {
+		for i := m.head; i != none; i = m.entries[i].next {
+			e := m.entries[i]
+			if !yield(e.key, e.value) {
 				return
 			}
 		}
@@ -190,8 +255,8 @@ func (m *Map[K, V]) All() iter.Seq2[K, V] {
 // in the order in which they were inserted.
 func (m *Map[K, V]) Keys() iter.Seq[K] {
 	return func(yield func(K) bool) {
-		for item := range m.list.All() {
-			if !yield(item.key) {
+		for i := m.head; i != none; i = m.entries[i].next {
+			if !yield(m.entries[i].key) {
 				return
 			}
 		}
@@ -202,8 +267,8 @@ func (m *Map[K, V]) Keys() iter.Seq[K] {
 // in the order in which they were inserted.
 func (m *Map[K, V]) Values() iter.Seq[V] {
 	return func(yield func(V) bool) {
-		for item := range m.list.All() {
-			if !yield(item.value) {
+		for i := m.head; i != none; i = m.entries[i].next {
+			if !yield(m.entries[i].value) {
 				return
 			}
 		}
