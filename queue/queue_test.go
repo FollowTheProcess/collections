@@ -20,6 +20,24 @@ func TestIsEmpty(t *testing.T) {
 	test.False(t, q.IsEmpty())
 }
 
+// TestIsEmptyAfterDrain exercises IsEmpty after pushing and popping all
+// items back out.
+func TestIsEmptyAfterDrain(t *testing.T) {
+	q := queue.New[int]()
+	for i := range 10 {
+		q.Push(i)
+	}
+
+	test.False(t, q.IsEmpty())
+
+	for range 10 {
+		_, ok := q.Pop()
+		test.True(t, ok)
+	}
+
+	test.True(t, q.IsEmpty(), test.Context("Queue should be empty after full drain"))
+}
+
 func TestSize(t *testing.T) {
 	q := queue.New[string]()
 	q.Push("hello")
@@ -37,25 +55,68 @@ func TestPop(t *testing.T) {
 	q.Push("general")
 	q.Push("kenobi")
 
-	item, err := q.Pop()
-	test.Ok(t, err)
+	item, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "hello")
 
-	item, err = q.Pop()
-	test.Ok(t, err)
+	item, ok = q.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "there")
 
-	item, err = q.Pop()
-	test.Ok(t, err)
+	item, ok = q.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "general")
 
-	item, err = q.Pop()
-	test.Ok(t, err)
+	item, ok = q.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "kenobi")
 
-	// Try one more pop, should error
-	_, err = q.Pop()
-	test.Err(t, err)
+	// Try one more pop, should report empty
+	_, ok = q.Pop()
+	test.False(t, ok)
+}
+
+// TestMixedPushPop exercises interleaved Push/Pop patterns to make sure
+// the ring buffer indices track correctly across wraparound.
+func TestMixedPushPop(t *testing.T) {
+	q := queue.New[int]()
+
+	// Prime with 3 items, pop 2, push 3 more — drives the head/tail
+	// indices through a wraparound.
+	q.Push(1)
+	q.Push(2)
+	q.Push(3)
+
+	first, ok := q.Pop()
+	test.True(t, ok)
+	test.Equal(t, first, 1)
+
+	second, ok := q.Pop()
+	test.True(t, ok)
+	test.Equal(t, second, 2)
+
+	q.Push(4)
+	q.Push(5)
+	q.Push(6)
+
+	got := slices.Collect(q.All())
+	test.EqualFunc(t, got, []int{3, 4, 5, 6}, slices.Equal)
+}
+
+// TestLongCycle pushes and pops many more items than the queue ever
+// holds at once to catch any growth-on-pop regression.
+func TestLongCycle(t *testing.T) {
+	q := queue.New[int]()
+
+	for i := range 10_000 {
+		q.Push(i)
+
+		got, ok := q.Pop()
+		test.True(t, ok)
+		test.Equal(t, got, i)
+	}
+
+	test.True(t, q.IsEmpty(), test.Context("Queue should be empty after equal Push/Pop count"))
 }
 
 func TestItems(t *testing.T) {
@@ -90,12 +151,12 @@ func TestFrom(t *testing.T) {
 
 	test.Equal(t, q.Size(), 4)
 
-	first, err := q.Pop()
-	test.Ok(t, err)
+	first, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, "cheese")
 
-	second, err := q.Pop()
-	test.Ok(t, err)
+	second, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, second, "apples")
 }
 
@@ -106,12 +167,12 @@ func TestCollect(t *testing.T) {
 
 	test.Equal(t, q.Size(), 4)
 
-	first, err := q.Pop()
-	test.Ok(t, err)
+	first, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, "cheese")
 
-	second, err := q.Pop()
-	test.Ok(t, err)
+	second, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, second, "apples")
 }
 
@@ -121,8 +182,8 @@ func TestWrapAroundFIFO(t *testing.T) {
 	q.Push(2)
 	q.Push(3)
 	q.Push(4)
-	q.Pop() //nolint:errcheck // No need
-	q.Pop() //nolint:errcheck // No need
+	q.Pop()
+	q.Pop()
 	q.Push(5)
 	q.Push(6)
 
@@ -136,8 +197,8 @@ func TestNotNew(t *testing.T) {
 	q.Push(1)
 	q.Push(2)
 
-	first, err := q.Pop()
-	test.Ok(t, err)
+	first, ok := q.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, 1)
 }
 
@@ -147,9 +208,9 @@ func BenchmarkQueue(b *testing.B) {
 	for b.Loop() {
 		s.Push(1)
 
-		_, err := s.Pop()
-		if err != nil {
-			b.Errorf("Pop() returned an error: %v", err)
+		_, ok := s.Pop()
+		if !ok {
+			b.Error("Pop() returned ok=false")
 		}
 	}
 }

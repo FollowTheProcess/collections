@@ -56,6 +56,11 @@ A set is an unordered collection of unique items offering fast lookup and member
 // Initialise a new set with a concrete type
 s := set.New[string]()
 
+// Pre-size if you know the expected population, or build from existing data
+_ = set.WithCapacity[string](1024)
+_ = set.From([]string{"built", "from", "a", "slice"})
+_ = set.Collect(slices.Values([]string{"from", "an", "iterator"}))
+
 // Insert items to the set
 s.Insert("hello")
 s.Insert("sets")
@@ -76,13 +81,21 @@ other.Insert("hello")
 other.Insert("more")
 
 // Union: combine both sets into one
-set.Union(s, other) // ["hello", "in", "sets", "more", "go"]
+set.Union(s, other) // ["hello", "in", "sets", "more"]
 
 // Intersection: all items present in both sets
 set.Intersection(s, other) // ["hello"]
 
 // Difference: items in s but not in other
-set.Difference(s, other) // ["sets", "in", "go"]
+set.Difference(s, other) // ["sets", "in"]
+
+// Symmetric difference: items in exactly one of the two sets
+set.SymmetricDifference(s, other) // ["sets", "in", "more"]
+
+// Set predicates
+set.IsDisjoint(s, other) // false — they share "hello"
+set.IsSubset(s, other)   // false
+set.IsSuperset(s, other) // false
 ```
 
 ### Stack
@@ -114,9 +127,9 @@ fmt.Println(item) // "stacks"
 item, _ = s.Pop()
 fmt.Println(item) // "hello"
 
-// Popping from an empty stack returns an error
-_, err := s.Pop()
-fmt.Println(err) // "pop from empty stack"
+// Popping from an empty stack returns the zero value and ok = false
+item, ok := s.Pop()
+fmt.Println(item, ok) // "", false
 ```
 
 ### Queue
@@ -148,9 +161,9 @@ fmt.Println(item) // "in"
 item, _ = q.Pop()
 fmt.Println(item) // "go"
 
-// Popping from an empty queue returns an error
-_, err := q.Pop()
-fmt.Println(err) // "pop from empty queue"
+// Popping from an empty queue returns the zero value and ok = false
+item, ok := q.Pop()
+fmt.Println(item, ok) // "", false
 ```
 
 ### List
@@ -168,8 +181,11 @@ l.Append("two")
 // Push things at the start
 l.Prepend("before")
 
-last, err := l.Last()
-// Handle err.. means empty list
+// Last returns (*Node, bool) — ok is false when the list is empty.
+last, ok := l.Last()
+if !ok {
+    // list is empty
+}
 fmt.Println(last.Item()) // <- Last is a Node, so you must call .Item() to get underlying data
 ```
 
@@ -230,13 +246,19 @@ counts.Add("orange")
 counts.Add("raspberry")
 
 // How many apples?
-counts.Count("apple") // 3
+counts.Get("apple") // 3
 
 // How many fruits in total?
 counts.Sum() // 6
 
-// What's the most common fruit
+// What's the most common fruit — MostCommon takes n and returns the top-n pairs
 counts.MostCommon(1) // [{Item: "apple", Count: 3}]
+
+// Iterate every (item, count) pair in descending count order
+for item, count := range counts.Descending() {
+    // "apple" 3, "orange" 2, "raspberry" 1
+    _, _ = item, count
+}
 ```
 
 ### Chain
@@ -280,7 +302,7 @@ maps := []map[int]string{
 ### Priority Queue
 
 ```go
-queue := priority.New[string]()
+q := priority.New[string]()
 
 // Add strings and their priorities (note out of order)
 // highest priority wins
@@ -289,13 +311,13 @@ q.Push("one", 1)
 q.Push("three", 3)
 q.Push("four", 4)
 
-item, err := q.Pop() // -> "four", nil
-item, err := q.Pop() // -> "three", nil
-item, err := q.Pop() // -> "two", nil
-item, err := q.Pop() // -> "one", nil
+item, ok := q.Pop() // -> "four", true
+item, ok = q.Pop()  // -> "three", true
+item, ok = q.Pop()  // -> "two", true
+item, ok = q.Pop()  // -> "one", true
 
-// Pop from empty queue
-item, err := q.Pop() // -> "", errors.New("pop from empty queue")
+// Pop from empty queue returns the zero value and ok = false
+item, ok := q.Pop() // -> "", false
 ```
 
 [Directed Acyclic Graph]: https://en.wikipedia.org/wiki/Directed_acyclic_graph

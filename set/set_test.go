@@ -558,6 +558,81 @@ func TestSymmetricDifference(t *testing.T) {
 	}
 }
 
+// TestIntersectionNonNilEmptyVariadic covers a historic panic where passing
+// an explicitly empty (but non-nil) variadic slice fell through the nil
+// guard and caused a nil-deref inside the loop. It should return the empty
+// set just like passing no sets at all.
+func TestIntersectionNonNilEmptyVariadic(t *testing.T) {
+	empty := []*set.Set[int]{}
+	got := set.Intersection(empty...)
+
+	test.True(t, got.IsEmpty())
+}
+
+// TestDifferenceNoOthers checks that Difference(s) with zero other sets
+// returns a copy of s (mathematically s \ ∅ = s). Historically this took
+// an incorrect short-circuit and returned an empty set.
+func TestDifferenceNoOthers(t *testing.T) {
+	s := set.From([]string{"a", "b", "c"})
+	got := set.Difference(s)
+
+	test.True(t, set.Equal(got, s), test.Context("Difference with no others should equal s"))
+
+	// Mutating the result must not affect the input.
+	got.Insert("d")
+	test.False(t, s.Contains("d"), test.Context("Result should be a fresh allocation, independent of s"))
+}
+
+// TestSymmetricDifferenceFreshAllocation asserts the returned set is not
+// aliased to a or b, including when one of them is empty — previously,
+// the empty-input fast path returned the non-empty input unchanged.
+func TestSymmetricDifferenceFreshAllocation(t *testing.T) {
+	t.Run("a empty", func(t *testing.T) {
+		a := set.New[int]()
+		b := set.From([]int{1, 2, 3})
+
+		got := set.SymmetricDifference(a, b)
+		test.True(t, set.Equal(got, b))
+
+		got.Insert(99)
+		test.False(t, b.Contains(99), test.Context("Result must not alias b"))
+	})
+
+	t.Run("b empty", func(t *testing.T) {
+		a := set.From([]int{1, 2, 3})
+		b := set.New[int]()
+
+		got := set.SymmetricDifference(a, b)
+		test.True(t, set.Equal(got, a))
+
+		got.Insert(99)
+		test.False(t, a.Contains(99), test.Context("Result must not alias a"))
+	})
+
+	t.Run("both non-empty", func(t *testing.T) {
+		a := set.From([]int{1, 2, 3})
+		b := set.From([]int{2, 3, 4})
+
+		got := set.SymmetricDifference(a, b)
+		got.Insert(99)
+
+		test.False(t, a.Contains(99), test.Context("Result must not alias a"))
+		test.False(t, b.Contains(99), test.Context("Result must not alias b"))
+	})
+}
+
+// TestIsDisjointNonSmallestCollision covers the case where two non-smallest
+// sets share an item — the historic bug only probed items in the smallest
+// set so collisions between B and C were silently missed.
+func TestIsDisjointNonSmallestCollision(t *testing.T) {
+	a := set.From([]int{1})
+	b := set.From([]int{2, 3, 4})
+	c := set.From([]int{3, 5, 6})
+
+	// a is the smallest; b and c share 3. Must report not disjoint.
+	test.False(t, set.IsDisjoint(a, b, c))
+}
+
 func TestString(t *testing.T) {
 	s := set.New[string]()
 
@@ -661,8 +736,11 @@ func BenchmarkIntersection(b *testing.B) {
 
 func BenchmarkInsert(b *testing.B) {
 	s := set.New[int]()
+
+	i := 0
 	for b.Loop() {
-		s.Insert(b.N)
+		s.Insert(i)
+		i++
 	}
 }
 
@@ -674,8 +752,10 @@ func BenchmarkContains(b *testing.B) {
 		s.Insert(i)
 	}
 
+	i := 0
 	for b.Loop() {
-		s.Contains(b.N)
+		s.Contains(i)
+		i++
 	}
 }
 

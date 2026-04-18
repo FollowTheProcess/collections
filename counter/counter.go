@@ -75,19 +75,9 @@ func (c *Counter[T]) Size() int {
 //
 // If the item doesn't exist, it is added to the counter with the count of 1, and 1 will be returned.
 func (c *Counter[T]) Add(item T) int {
-	v, exists := c.counts[item]
-	if !exists {
-		// Not previously seen -> item: 1
-		c.counts[item] = 1
+	c.counts[item]++
 
-		return 1
-	}
-
-	// Already existed, increment it's count
-	v++
-	c.counts[item] = v
-
-	return v
+	return c.counts[item]
 }
 
 // Sub subtracts an item from the counter, decrementing it's count and returning the new count.
@@ -151,7 +141,11 @@ func (c *Counter[T]) Sum() int {
 	return sum
 }
 
-// Reset resets the [Counter], removing all items and freeing the memory.
+// Reset resets the [Counter], removing all items.
+//
+// The underlying map's bucket storage is retained for reuse, only the entries
+// are cleared. If you need to release that memory, replace the counter with
+// a fresh one from [New].
 func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }

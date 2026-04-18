@@ -1,9 +1,13 @@
-// Package priority implements a generic priority queue; that is a queue who's items are assigned a priority
+// Package priority implements a generic priority queue; that is a queue whose items are assigned a priority
 // and are popped off the queue in (descending) order of this priority.
+//
+// The queue is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package priority // import "go.followtheprocess.codes/collections/priority"
 
 import (
-	"errors"
+	"iter"
+	"slices"
 )
 
 // Element holds an element in the priority queue along with it's priority.
@@ -23,7 +27,7 @@ type Queue[T any] struct {
 // consider using [From] or [FromFunc] as they are more performant than constructing
 // and empty queue and filling it in a loop.
 func New[T any]() *Queue[T] {
-	return &Queue[T]{container: make([]Element[T], 0)}
+	return &Queue[T]{}
 }
 
 // WithCapacity constructs and returns a new priority Queue with the given capacity.
@@ -83,12 +87,14 @@ func (q *Queue[T]) Push(item T, priority int) {
 	q.siftUp(len(q.container) - 1)
 }
 
-// Pop removes and returns the element with the highest priority.
-func (q *Queue[T]) Pop() (T, error) {
+// Pop removes and returns the element with the highest priority. The
+// boolean is false (and the item is the zero value of T) if the queue
+// is empty.
+func (q *Queue[T]) Pop() (item T, ok bool) {
 	if len(q.container) == 0 {
 		var zero T
 
-		return zero, errors.New("pop from empty priority queue")
+		return zero, false
 	}
 
 	// Swap the first (highest priority) and last element
@@ -102,7 +108,7 @@ func (q *Queue[T]) Pop() (T, error) {
 	// Update heap order
 	q.siftDown(0, n)
 
-	return elem.Item, nil
+	return elem.Item, true
 }
 
 // Size returns the number of elements currently in the queue.
@@ -113,6 +119,28 @@ func (q *Queue[T]) Size() int {
 // IsEmpty returns whether the queue is empty.
 func (q *Queue[T]) IsEmpty() bool {
 	return len(q.container) == 0
+}
+
+// All returns an iterator over the items in the queue in descending priority
+// order, i.e. the same order they would be returned by repeated calls to
+// [Queue.Pop]. Items with equal priority are yielded in a non-deterministic
+// order.
+//
+// The queue itself is left unmodified. Internally, All works against a clone
+// of the heap so that callers who stop iteration early only pay for the
+// elements they actually consumed (O(log n) per yielded item).
+func (q *Queue[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		// Clone the heap so we don't mutate the real queue, then repeatedly
+		// pop the root: O(log n) per yield, cheap on early break.
+		clone := Queue[T]{container: slices.Clone(q.container)}
+		for clone.Size() > 0 {
+			item, _ := clone.Pop()
+			if !yield(item) {
+				return
+			}
+		}
+	}
 }
 
 // init heapifies the underlying container, establishing the heap invariants required by
@@ -139,7 +167,7 @@ func (q *Queue[T]) siftUp(index int) {
 }
 
 // siftDown moves an item (by index) down the heap until it's in the correct position.
-func (q *Queue[T]) siftDown(index, length int) bool {
+func (q *Queue[T]) siftDown(index, length int) {
 	i := index
 
 	for {
@@ -160,8 +188,6 @@ func (q *Queue[T]) siftDown(index, length int) bool {
 		q.swap(i, toSwap)
 		i = toSwap
 	}
-
-	return i > index
 }
 
 // swap swaps two elements in the heap by index.

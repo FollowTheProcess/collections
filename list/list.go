@@ -5,12 +5,12 @@
 //
 // The list can be traversed both forwards and backwards and offers cheap (O(1)) insertion
 // and removal from arbitrary indexes.
+//
+// The list is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package list // import "go.followtheprocess.codes/collections/list"
 
-import (
-	"errors"
-	"iter"
-)
+import "iter"
 
 // Node is a single Node in the list.
 type Node[T any] struct {
@@ -72,27 +72,23 @@ func (l *List[T]) Prepend(item T) *Node[T] {
 }
 
 // First returns a pointer to the node at the start (head) of the list, leaving
-// the list unmodified.
-//
-// If the list is empty an error is returned.
-func (l *List[T]) First() (*Node[T], error) {
+// the list unmodified. The boolean is false if the list is empty.
+func (l *List[T]) First() (node *Node[T], ok bool) {
 	if l.first == nil {
-		return nil, errors.New("First() called on empty list")
+		return nil, false
 	}
 
-	return l.first, nil
+	return l.first, true
 }
 
 // Last returns a pointer to the node at the end (tail) of the list, leaving
-// the list unmodified.
-//
-// If the list is empty an error is returned.
-func (l *List[T]) Last() (*Node[T], error) {
+// the list unmodified. The boolean is false if the list is empty.
+func (l *List[T]) Last() (node *Node[T], ok bool) {
 	if l.last == nil {
-		return nil, errors.New("Last() called on empty list")
+		return nil, false
 	}
 
-	return l.last, nil
+	return l.last, true
 }
 
 // Len returns the number of elements in the list.
@@ -100,26 +96,24 @@ func (l *List[T]) Len() int {
 	return l.len
 }
 
-// Pop removes the last node from the list and returns it.
-//
-// If the list is empty, Pop() returns an error.
-func (l *List[T]) Pop() (*Node[T], error) {
+// Pop removes the last node from the list and returns it. The boolean is
+// false if the list was empty and nothing was popped.
+func (l *List[T]) Pop() (node *Node[T], ok bool) {
 	if l.last == nil {
-		return nil, errors.New("Pop() called on empty list")
+		return nil, false
 	}
 
-	return l.Remove(l.last), nil
+	return l.Remove(l.last), true
 }
 
-// PopFirst removes the first node from the list and returns it.
-//
-// If the list is empty, PopFirst() returns an error.
-func (l *List[T]) PopFirst() (*Node[T], error) {
+// PopFirst removes the first node from the list and returns it. The boolean
+// is false if the list was empty and nothing was popped.
+func (l *List[T]) PopFirst() (node *Node[T], ok bool) {
 	if l.first == nil {
-		return nil, errors.New("PopFirst() called on empty list")
+		return nil, false
 	}
 
-	return l.Remove(l.first), nil
+	return l.Remove(l.first), true
 }
 
 // Remove removes a [Node] from the list, returning it after removal.
