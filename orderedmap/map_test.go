@@ -41,6 +41,22 @@ func TestGetInsert(t *testing.T) {
 	test.Equal(t, val, "other item", test.Context("The new value should be returned from Get"))
 }
 
+func TestInsertRemove(t *testing.T) {
+	m := orderedmap.New[int, string]()
+
+	test.Equal(t, m.Size(), 0, test.Context("Wrong initial size"))
+
+	m.Insert(1, "one")
+
+	test.Equal(t, m.Size(), 1, test.Context("Wrong size after inserts"))
+
+	one, existed := m.Remove(1)
+	test.True(t, existed, test.Context("1 should have existed in the map"))
+	test.Equal(t, one, "one", test.Context("Wrong value returned from Remove"))
+
+	test.Equal(t, m.Size(), 0, test.Context("Wrong size after removal"))
+}
+
 func TestRemove(t *testing.T) {
 	m := orderedmap.New[int, string]()
 
