@@ -17,6 +17,12 @@ type Counter[T comparable] struct {
 	counts map[T]int
 }
 
+// Pair is an (item, count) pair from a Counter, as returned by [Counter.MostCommon].
+type Pair[T comparable] struct {
+	Item  T
+	Count int
+}
+
 // New constructs and returns a new [Counter].
 func New[T comparable]() *Counter[T] {
 	return &Counter[T]{counts: make(map[T]int)}
@@ -150,27 +156,35 @@ func (c *Counter[T]) Reset() {
 	clear(c.counts)
 }
 
-// MostCommon returns the item with the highest count, along with the count itself.
+// MostCommon returns the n most common items in the Counter in descending
+// order of count.
 //
-// If the Counter is empty it returns the zero value for the item type and 0 for the count.
-func (c *Counter[T]) MostCommon() (item T, count int) {
-	if len(c.counts) == 0 {
-		var zero T
-
-		return zero, 0
+// If n is less than or equal to zero, the returned slice is nil. If n exceeds
+// the number of unique items in the Counter, all items are returned.
+//
+// Items with equal counts are returned in a non-deterministic order.
+func (c *Counter[T]) MostCommon(n int) []Pair[T] {
+	if n <= 0 || len(c.counts) == 0 {
+		return nil
 	}
 
-	var mostCommon T
-
-	highestCount := 0
+	pairs := make([]Pair[T], 0, len(c.counts))
 	for item, count := range c.counts {
-		if count > highestCount {
-			mostCommon = item
-			highestCount = count
-		}
+		pairs = append(pairs, Pair[T]{Item: item, Count: count})
 	}
 
-	return mostCommon, highestCount
+	// Sort by count in descending order.
+	slices.SortFunc(pairs, func(a, b Pair[T]) int {
+		return cmp.Compare(b.Count, a.Count)
+	})
+
+	if n >= len(pairs) {
+		return pairs
+	}
+
+	// Right-size the returned slice so the caller doesn't pin the full
+	// scratch buffer's backing array when n is much smaller than len(pairs).
+	return slices.Clone(pairs[:n])
 }
 
 // Descending returns an iterator of the item, count pairs in the Counter, yielding them
