@@ -30,26 +30,73 @@ func TestPop(t *testing.T) {
 	s.Push("general")
 	s.Push("kenobi")
 
-	item, err := s.Pop()
-	test.Ok(t, err)
+	item, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "kenobi")
 
-	item, err = s.Pop()
-	test.Ok(t, err)
+	item, ok = s.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "general")
 
-	item, err = s.Pop()
-	test.Ok(t, err)
+	item, ok = s.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "there")
 
-	item, err = s.Pop()
-	test.Ok(t, err)
+	item, ok = s.Pop()
+	test.True(t, ok)
 	test.Equal(t, item, "hello")
 
-	// Try one more pop, should error
-	item, err = s.Pop()
-	test.Err(t, err, test.Context("Pop from empty stack should error"))
+	// Try one more pop, should report empty
+	item, ok = s.Pop()
+	test.False(t, ok, test.Context("Pop from empty stack should return ok=false"))
 	test.Equal(t, item, "", test.Context("Item should be the zero value"))
+}
+
+// TestPopPushReuse covers the slot-zeroing behaviour in Pop: draining the
+// stack and pushing again should put a fresh value into the reused slot,
+// so the stack must not silently surface any retained prior value.
+func TestPopPushReuse(t *testing.T) {
+	s := stack.New[string]()
+	s.Push("a")
+	s.Push("b")
+	s.Push("c")
+
+	// Drain
+	for range 3 {
+		_, ok := s.Pop()
+		test.True(t, ok)
+	}
+
+	test.True(t, s.IsEmpty())
+
+	// Push new values into the reused backing array
+	s.Push("x")
+	s.Push("y")
+
+	got, ok := s.Pop()
+	test.True(t, ok)
+	test.Equal(t, got, "y")
+
+	got, ok = s.Pop()
+	test.True(t, ok)
+	test.Equal(t, got, "x")
+}
+
+// TestAllAfterPartialPops covers iteration order after a mid-drain pop.
+func TestAllAfterPartialPops(t *testing.T) {
+	s := stack.New[int]()
+	for i := 1; i <= 5; i++ {
+		s.Push(i)
+	}
+
+	// Pop two, leaving 1, 2, 3 in the stack
+	for range 2 {
+		_, ok := s.Pop()
+		test.True(t, ok)
+	}
+
+	got := slices.Collect(s.All())
+	test.EqualFunc(t, got, []int{3, 2, 1}, slices.Equal)
 }
 
 func TestNotNew(t *testing.T) {
@@ -57,8 +104,8 @@ func TestNotNew(t *testing.T) {
 	s.Push(1)
 	s.Push(2)
 
-	first, err := s.Pop()
-	test.Ok(t, err)
+	first, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, 2)
 }
 
@@ -109,12 +156,12 @@ func TestFrom(t *testing.T) {
 
 	test.Equal(t, s.Size(), 4)
 
-	first, err := s.Pop()
-	test.Ok(t, err)
+	first, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, "beer")
 
-	second, err := s.Pop()
-	test.Ok(t, err)
+	second, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, second, "wine")
 }
 
@@ -125,12 +172,12 @@ func TestCollect(t *testing.T) {
 
 	test.Equal(t, s.Size(), 4)
 
-	first, err := s.Pop()
-	test.Ok(t, err)
+	first, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, first, "beer")
 
-	second, err := s.Pop()
-	test.Ok(t, err)
+	second, ok := s.Pop()
+	test.True(t, ok)
 	test.Equal(t, second, "wine")
 }
 
@@ -140,9 +187,9 @@ func BenchmarkStack(b *testing.B) {
 	for b.Loop() {
 		s.Push(1)
 
-		_, err := s.Pop()
-		if err != nil {
-			b.Errorf("Pop() returned an error: %v", err)
+		_, ok := s.Pop()
+		if !ok {
+			b.Error("Pop() returned ok=false")
 		}
 	}
 }

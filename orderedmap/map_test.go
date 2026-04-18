@@ -79,6 +79,93 @@ func TestRemove(t *testing.T) {
 	test.Equal(t, m.Size(), 2, test.Context("Wrong size after removal"))
 }
 
+// TestRemoveOldest is a regression test for a historic bug in list.Append
+// that returned a stale (never-inserted) node when called on an empty
+// list. Removing the first-inserted key passes that node back through to
+// list.Remove and used to clear the list head/tail, orphaning the
+// remaining entries. This exercises the fix by removing the oldest key
+// explicitly and checking the remaining iteration order and size.
+func TestRemoveOldest(t *testing.T) {
+	m := orderedmap.New[int, string]()
+	m.Insert(1, "one")
+	m.Insert(2, "two")
+	m.Insert(3, "three")
+
+	one, existed := m.Remove(1)
+	test.True(t, existed, test.Context("1 should exist"))
+	test.Equal(t, one, "one")
+	test.Equal(t, m.Size(), 2, test.Context("Size wrong after removing oldest"))
+
+	oldestKey, oldestVal, ok := m.Oldest()
+	test.True(t, ok)
+	test.Equal(t, oldestKey, 2, test.Context("2 is now the oldest"))
+	test.Equal(t, oldestVal, "two")
+
+	keys := slices.Collect(m.Keys())
+	test.EqualFunc(t, keys, []int{2, 3}, slices.Equal)
+}
+
+// TestInsertOnlyThenRemove covers the edge case of a single-entry map —
+// insert one key, remove it, make sure the map fully empties and is
+// consistent. Regression coverage for the same list.Append/Remove bug.
+func TestInsertOnlyThenRemove(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("only", 42)
+
+	test.Equal(t, m.Size(), 1)
+
+	got, existed := m.Remove("only")
+	test.True(t, existed)
+	test.Equal(t, got, 42)
+
+	test.Equal(t, m.Size(), 0, test.Context("Size must be 0 after removing the sole entry"))
+
+	_, _, ok := m.Oldest()
+	test.False(t, ok)
+
+	_, _, ok = m.Newest()
+	test.False(t, ok)
+
+	keys := slices.Collect(m.Keys())
+	test.Equal(t, len(keys), 0, test.Context("Iteration should yield nothing"))
+}
+
+// TestInsertOrderPreservedAfterRemove checks that removing a middle key
+// leaves the remaining keys in original insertion order.
+func TestInsertOrderPreservedAfterRemove(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("a", 1)
+	m.Insert("b", 2)
+	m.Insert("c", 3)
+	m.Insert("d", 4)
+
+	_, _ = m.Remove("b")
+	_, _ = m.Remove("d")
+
+	keys := slices.Collect(m.Keys())
+	test.EqualFunc(t, keys, []string{"a", "c"}, slices.Equal)
+}
+
+// TestUpdateDoesNotReorder ensures Inserting an existing key updates the
+// value in place without moving the key to the newest position.
+func TestUpdateDoesNotReorder(t *testing.T) {
+	m := orderedmap.New[string, int]()
+	m.Insert("a", 1)
+	m.Insert("b", 2)
+	m.Insert("c", 3)
+
+	// Update the middle key
+	m.Insert("b", 22)
+
+	keys := slices.Collect(m.Keys())
+	test.EqualFunc(t, keys, []string{"a", "b", "c"}, slices.Equal)
+
+	// Newest should still be c
+	newestKey, _, ok := m.Newest()
+	test.True(t, ok)
+	test.Equal(t, newestKey, "c", test.Context("Updating an existing key must not move it to newest"))
+}
+
 func TestOldest(t *testing.T) {
 	m := orderedmap.New[int, string]()
 

@@ -5,10 +5,10 @@
 package set // import "go.followtheprocess.codes/collections/set"
 
 import (
+	"cmp"
 	"fmt"
 	"iter"
 	"maps"
-	"math"
 	"slices"
 )
 
@@ -222,23 +222,19 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 
 	n := len(sets) // Number of sets we've been passed
 
-	var smallest *Set[T]
-
-	minSize := math.MaxInt
-
+	// If any set is empty, the intersection is empty — anything
+	// intersected with the empty set is the empty set.
 	for _, set := range sets {
-		// If any set is empty, we can immediately return the empty set because
-		// no matter what the other sets contain, anything intersection empty set
-		// should return the empty set
 		if set.IsEmpty() {
 			return New[T]()
 		}
-
-		if len(set.container) < minSize {
-			smallest = set
-			minSize = len(set.container)
-		}
 	}
+
+	// Pick the smallest set to iterate — minimising the outer loop is
+	// the key optimisation since we probe every other set per item.
+	smallest := slices.MinFunc(sets, func(a, b *Set[T]) int {
+		return cmp.Compare(a.Size(), b.Size())
+	})
 
 	for item := range smallest.container {
 		numContains := 0 // The number of sets that contain this item
@@ -297,19 +293,12 @@ func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
 
 // SymmetricDifference returns a set containing the items that are in a or in b, but not both.
 //
-// If a or b is nil, an empty set is returned. If a is an empty set, b is returned, and if b
-// is an empty set, a is returned.
+// If a or b is nil, an empty set is returned. The returned set is always a
+// fresh allocation, independent of a and b, so mutations to it do not affect
+// the inputs.
 func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
 	if a == nil || b == nil {
 		return New[T]()
-	}
-	// Symmetric difference with an empty set is itself
-	if a.IsEmpty() {
-		return b
-	}
-
-	if b.IsEmpty() {
-		return a
 	}
 
 	// Good balanced approximation for the maximum size of the symmetric difference, if we

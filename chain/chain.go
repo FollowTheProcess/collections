@@ -1,5 +1,8 @@
 // Package chain provides an implementation of chained maps in a single view, where lookups traverse
 // the layers of maps until a match is found.
+//
+// The chain is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package chain // import "go.followtheprocess.codes/chain"
 
 import (
@@ -22,17 +25,25 @@ func New[K comparable, V any]() *Chain[K, V] {
 // From constructs a new [Chain] from an existing slice of maps.
 //
 // The order of priority is in the order of the slice so a slice of maps
-// [a, b, c] will result in a [Chain] who's lookup order is a, b, c.
+// [a, b, c] will result in a [Chain] whose lookup order is a, b, c.
+//
+// The outer slice is copied so later mutations to the caller's slice (reordering,
+// appending, etc.) do not affect the [Chain]. The maps themselves are shared
+// by reference; modifications to entries within a map remain visible through
+// the chain (and vice versa). This mirrors Python's collections.ChainMap.
 func From[K comparable, V any](maps []map[K]V) *Chain[K, V] {
 	return &Chain[K, V]{
-		maps: maps,
+		maps: slices.Clone(maps),
 	}
 }
 
 // Collect constructs a new [Chain] from an iterator of maps.
 //
 // The order of priority is in the order of the slice so a iterator of maps
-// yielding [a, b, c] will result in a [Chain] who's lookup order is a, b, c.
+// yielding [a, b, c] will result in a [Chain] whose lookup order is a, b, c.
+//
+// The maps themselves are shared by reference; modifications to entries within
+// a map remain visible through the chain (and vice versa).
 func Collect[K comparable, V any](maps iter.Seq[map[K]V]) *Chain[K, V] {
 	return &Chain[K, V]{
 		maps: slices.Collect(maps),

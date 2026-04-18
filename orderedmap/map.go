@@ -1,5 +1,8 @@
 // Package orderedmap implements an ordered map, that is; a map that remembers the order in which
 // key, value pairs were inserted.
+//
+// The map is not safe for concurrent access across goroutines, the caller is responsible for
+// synchronising concurrent access.
 package orderedmap // import "go.followtheprocess.codes/collections/orderedmap"
 
 import (
@@ -122,13 +125,12 @@ func (m *Map[K, V]) Size() int {
 // Oldest returns the oldest key, value pair in the map, i.e. the pair
 // that was inserted first. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
-	var zeroKey K
+	node, exists := m.list.First()
+	if !exists {
+		var zeroKey K
 
-	var zeroVal V
+		var zeroVal V
 
-	node, err := m.list.First()
-	if err != nil {
-		// Empty list
 		return zeroKey, zeroVal, false
 	}
 
@@ -138,13 +140,12 @@ func (m *Map[K, V]) Oldest() (key K, value V, ok bool) {
 // Newest returns the newest key, value pair in the map, i.e. the pair that
 // was inserted last. Note that in place modifications do not update the order.
 func (m *Map[K, V]) Newest() (key K, value V, ok bool) {
-	var zeroKey K
+	node, exists := m.list.Last()
+	if !exists {
+		var zeroKey K
 
-	var zeroVal V
+		var zeroVal V
 
-	node, err := m.list.Last()
-	if err != nil {
-		// Empty list
 		return zeroKey, zeroVal, false
 	}
 

@@ -12,12 +12,12 @@ func TestEmptyList(t *testing.T) {
 	t.Run("new", func(t *testing.T) {
 		list := list.New[string]()
 
-		first, err := list.First()
-		test.Err(t, err, test.Context("Should be list is empty error"))
+		first, ok := list.First()
+		test.False(t, ok, test.Context("First on empty list should return ok=false"))
 		test.Equal(t, first, nil)
 
-		last, err := list.Last()
-		test.Err(t, err, test.Context("Should be list is empty error"))
+		last, ok := list.Last()
+		test.False(t, ok, test.Context("Last on empty list should return ok=false"))
 		test.Equal(t, last, nil)
 
 		test.Equal(t, list.Len(), 0)
@@ -26,12 +26,12 @@ func TestEmptyList(t *testing.T) {
 	t.Run("composite literal", func(t *testing.T) {
 		list := &list.List[string]{}
 
-		first, err := list.First()
-		test.Err(t, err, test.Context("Should be list is empty error"))
+		first, ok := list.First()
+		test.False(t, ok, test.Context("First on empty list should return ok=false"))
 		test.Equal(t, first, nil)
 
-		last, err := list.Last()
-		test.Err(t, err, test.Context("Should be list is empty error"))
+		last, ok := list.Last()
+		test.False(t, ok, test.Context("Last on empty list should return ok=false"))
 		test.Equal(t, last, nil)
 
 		test.Equal(t, list.Len(), 0)
@@ -44,37 +44,61 @@ func TestAppend(t *testing.T) {
 	list.Append("foo")
 	test.Equal(t, list.Len(), 1, test.Context("Wrong length after append"))
 
-	first, err := list.First()
-	test.Ok(t, err)
+	first, ok := list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "foo", test.Context("First item should be \"foo\""))
 
-	last, err := list.Last()
-	test.Ok(t, err)
+	last, ok := list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "foo", test.Context("Last item should also be \"foo\""))
 
 	// Append again
 	list.Append("bar")
 	test.Equal(t, list.Len(), 2)
 
-	first, err = list.First()
-	test.Ok(t, err)
+	first, ok = list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "foo", test.Context("First should *still* be \"foo\""))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "bar", test.Context("Last should now be \"bar\""))
 
 	// One more time
 	list.Append("baz")
 	test.Equal(t, list.Len(), 3)
 
-	first, err = list.First()
-	test.Ok(t, err)
+	first, ok = list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "foo", test.Context("First should *still* be \"foo\""))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "baz", test.Context("Last should now be \"baz\""))
+}
+
+// TestAppendEmptyThenRemove covers the historic bug where Append into an
+// empty list returned a stale node that wasn't the one actually inserted
+// into the list. If the bug regressed, removing the returned node would
+// either be a no-op or corrupt the list (Len would go to -1).
+func TestAppendEmptyThenRemove(t *testing.T) {
+	l := list.New[string]()
+
+	node := l.Append("only")
+	test.Equal(t, l.Len(), 1, test.Context("Wrong size after single Append"))
+
+	first, ok := l.First()
+	test.True(t, ok)
+	test.Equal(t, first, node, test.Context("Returned node must be the one actually inserted"))
+
+	l.Remove(node)
+	test.Equal(t, l.Len(), 0, test.Context("Wrong size after removing the only node"))
+
+	_, ok = l.First()
+	test.False(t, ok, test.Context("First should be empty after removing the only node"))
+
+	_, ok = l.Last()
+	test.False(t, ok, test.Context("Last should be empty after removing the only node"))
 }
 
 func TestPrepend(t *testing.T) {
@@ -83,36 +107,36 @@ func TestPrepend(t *testing.T) {
 	list.Prepend("foo")
 	test.Equal(t, list.Len(), 1, test.Context("Wrong length after prepend"))
 
-	first, err := list.First()
-	test.Ok(t, err)
+	first, ok := list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "foo", test.Context("First element should be \"foo\""))
 
-	last, err := list.Last()
-	test.Ok(t, err)
+	last, ok := list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "foo", test.Context("Last element should also be \"foo\""))
 
 	// Prepend again
 	list.Prepend("bar")
 	test.Equal(t, list.Len(), 2)
 
-	first, err = list.First()
-	test.Ok(t, err)
+	first, ok = list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "bar", test.Context("First should now be \"bar\""))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "foo", test.Context("Last should still be \"foo\""))
 
 	// One more time
 	list.Prepend("baz")
 	test.Equal(t, list.Len(), 3)
 
-	first, err = list.First()
-	test.Ok(t, err)
+	first, ok = list.First()
+	test.True(t, ok)
 	test.Equal(t, first.Item(), "baz", test.Context("First should now be \"baz\""))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), "foo", test.Context("Last should still be \"foo\""))
 }
 
@@ -123,45 +147,45 @@ func TestPop(t *testing.T) {
 	list.Append(2)
 	list.Append(3)
 
-	first, err := list.First()
-	test.Ok(t, err)
+	first, ok := list.First()
+	test.True(t, ok)
 	test.Equal(t, list.Len(), 3)
 	test.Equal(t, first.Item(), 1)
 
-	last, err := list.Last()
-	test.Ok(t, err)
+	last, ok := list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), 3)
 
-	three, err := list.Pop()
-	test.Ok(t, err)
+	three, ok := list.Pop()
+	test.True(t, ok)
 	test.Equal(t, three.Item(), 3)
 	test.Equal(t, list.Len(), 2, test.Context("Len should be 2 after Pop"))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), 2)
 
-	two, err := list.Pop()
-	test.Ok(t, err)
+	two, ok := list.Pop()
+	test.True(t, ok)
 	test.Equal(t, two.Item(), 2)
 	test.Equal(t, list.Len(), 1, test.Context("Len should be 1 after second Pop"))
 
-	one, err := list.Pop()
-	test.Ok(t, err)
+	one, ok := list.Pop()
+	test.True(t, ok)
 	test.Equal(t, one.Item(), 1)
 	test.Equal(t, list.Len(), 0, test.Context("Len should be 0 after third Pop"))
 
-	first, err = list.First()
-	test.Err(t, err)
+	first, ok = list.First()
+	test.False(t, ok)
 	test.Equal(t, first, nil)
 
-	last, err = list.Last()
-	test.Err(t, err)
+	last, ok = list.Last()
+	test.False(t, ok)
 	test.Equal(t, last, nil)
 
-	// One more Pop, should error
-	broke, err := list.Pop()
-	test.Err(t, err)
+	// One more Pop, should report not ok
+	broke, ok := list.Pop()
+	test.False(t, ok)
 	test.Equal(t, broke, nil)
 }
 
@@ -172,45 +196,45 @@ func TestPopFirst(t *testing.T) {
 	list.Append(2)
 	list.Append(3)
 
-	first, err := list.First()
-	test.Ok(t, err)
+	first, ok := list.First()
+	test.True(t, ok)
 	test.Equal(t, list.Len(), 3)
 	test.Equal(t, first.Item(), 1)
 
-	last, err := list.Last()
-	test.Ok(t, err)
+	last, ok := list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), 3)
 
-	one, err := list.PopFirst()
-	test.Ok(t, err)
+	one, ok := list.PopFirst()
+	test.True(t, ok)
 	test.Equal(t, one.Item(), 1)
 	test.Equal(t, list.Len(), 2, test.Context("Len should be 2 after PopFirst"))
 
-	last, err = list.Last()
-	test.Ok(t, err)
+	last, ok = list.Last()
+	test.True(t, ok)
 	test.Equal(t, last.Item(), 3)
 
-	two, err := list.PopFirst()
-	test.Ok(t, err)
+	two, ok := list.PopFirst()
+	test.True(t, ok)
 	test.Equal(t, two.Item(), 2)
 	test.Equal(t, list.Len(), 1, test.Context("Len should be 1 after second PopFirst"))
 
-	three, err := list.PopFirst()
-	test.Ok(t, err)
+	three, ok := list.PopFirst()
+	test.True(t, ok)
 	test.Equal(t, three.Item(), 3)
 	test.Equal(t, list.Len(), 0, test.Context("Len should be 0 after third PopFirst"))
 
-	first, err = list.First()
-	test.Err(t, err)
+	first, ok = list.First()
+	test.False(t, ok)
 	test.Equal(t, first, nil)
 
-	last, err = list.Last()
-	test.Err(t, err)
+	last, ok = list.Last()
+	test.False(t, ok)
 	test.Equal(t, last, nil)
 
-	// One more PopFirst, should error
-	broke, err := list.PopFirst()
-	test.Err(t, err)
+	// One more PopFirst, should report not ok
+	broke, ok := list.PopFirst()
+	test.False(t, ok)
 	test.Equal(t, broke, nil)
 }
 
@@ -234,6 +258,41 @@ func TestRemove(t *testing.T) {
 
 	want = []string{"one", "four"}
 	test.EqualFunc(t, slices.Collect(list.All()), want, slices.Equal)
+}
+
+// TestMixedInsertRemove interleaves Prepend/Append with Remove of an
+// interior node and checks iteration is consistent with the list state.
+func TestMixedInsertRemove(t *testing.T) {
+	l := list.New[string]()
+
+	a := l.Append("a")
+	l.Append("b")
+	l.Prepend("z") // z, a, b
+	c := l.Append("c")
+	l.Prepend("y") // y, z, a, b, c
+
+	test.Equal(t, l.Len(), 5)
+
+	got := slices.Collect(l.All())
+	test.EqualFunc(t, got, []string{"y", "z", "a", "b", "c"}, slices.Equal)
+
+	// Remove an interior node
+	l.Remove(a)
+	test.Equal(t, l.Len(), 4)
+
+	got = slices.Collect(l.All())
+	test.EqualFunc(t, got, []string{"y", "z", "b", "c"}, slices.Equal)
+
+	// Remove the tail
+	l.Remove(c)
+	test.Equal(t, l.Len(), 3)
+
+	got = slices.Collect(l.All())
+	test.EqualFunc(t, got, []string{"y", "z", "b"}, slices.Equal)
+
+	// Iterate backwards too
+	got = slices.Collect(l.Backwards())
+	test.EqualFunc(t, got, []string{"b", "z", "y"}, slices.Equal)
 }
 
 func TestItems(t *testing.T) {

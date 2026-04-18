@@ -5,7 +5,6 @@
 package queue // import "go.followtheprocess.codes/collections/queue"
 
 import (
-	"errors"
 	"fmt"
 	"iter"
 )
@@ -73,28 +72,28 @@ func (q *Queue[T]) Push(item T) {
 	q.size++
 }
 
-// Pop removes an item from the front of the queue, if the queue
-// is empty, an error will be returned.
+// Pop removes an item from the front of the queue. The boolean is false
+// (and the item is the zero value of T) if the queue is empty.
 //
 //	q := queue.New[string]()
 //	q.Push("hello")
 //	q.Push("there")
 //	item, _ := q.Pop()
 //	fmt.Println(item) // "hello"
-func (q *Queue[T]) Pop() (T, error) {
+func (q *Queue[T]) Pop() (item T, ok bool) {
 	if q.size == 0 {
-		var none T
+		var zero T
 
-		return none, errors.New("pop from empty queue")
+		return zero, false
 	}
 
-	item := q.container[q.head]
+	item = q.container[q.head]
 	var zero T
 	q.container[q.head] = zero
 	q.head = (q.head + 1) % len(q.container)
 	q.size--
 
-	return item, nil
+	return item, true
 }
 
 // Size returns the number of items in the queue.
@@ -123,7 +122,7 @@ func (q *Queue[T]) IsEmpty() bool {
 //	q := queue.New[string]()
 //	q.Push("hello")
 //	q.Push("there")
-//	qlices.Collect(s.All()) // [hello there]
+//	slices.Collect(q.All()) // [hello there]
 func (q *Queue[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := range q.size {

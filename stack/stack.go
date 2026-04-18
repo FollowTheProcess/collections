@@ -5,7 +5,6 @@
 package stack // import "go.followtheprocess.codes/collections/stack"
 
 import (
-	"errors"
 	"fmt"
 	"iter"
 )
@@ -17,7 +16,7 @@ type Stack[T any] struct {
 
 // New constructs and returns a new stack.
 func New[T any]() *Stack[T] {
-	return &Stack[T]{container: make([]T, 0)}
+	return &Stack[T]{}
 }
 
 // WithCapacity constructs and returns a new stack with the given capacity.
@@ -60,8 +59,8 @@ func (s *Stack[T]) Push(item T) {
 	s.container = append(s.container, item)
 }
 
-// Pop removes an item from the top of the stack, if the stack
-// is empty, an error will be returned.
+// Pop removes an item from the top of the stack. The boolean is false
+// (and the item is the zero value of T) if the stack is empty.
 //
 //	s := stack.New[string]()
 //	s.Push("hello")
@@ -71,20 +70,20 @@ func (s *Stack[T]) Push(item T) {
 //
 //	item, _ := s.Pop()
 //	fmt.Println(item) // "kenobi"
-func (s *Stack[T]) Pop() (T, error) {
+func (s *Stack[T]) Pop() (item T, ok bool) {
 	l := len(s.container)
 	if l == 0 {
-		var none T
+		var zero T
 
-		return none, errors.New("pop from empty stack")
+		return zero, false
 	}
 
-	item := s.container[l-1]
+	item = s.container[l-1]
 	var zero T
 	s.container[l-1] = zero // for GC, otherwise this element might still be reachable
 	s.container = s.container[:l-1]
 
-	return item, nil
+	return item, true
 }
 
 // Size returns the number of items in the stack.

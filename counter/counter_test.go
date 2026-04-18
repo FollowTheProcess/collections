@@ -115,6 +115,32 @@ func TestSum(t *testing.T) {
 	test.Equal(t, c.Sum(), len(fruits))
 }
 
+// TestSubCyclesToDelete covers the "decrement an item down to zero and it
+// gets removed from the counter" behaviour — easy to regress if the
+// delete-on-zero branch is simplified away.
+func TestSubCyclesToDelete(t *testing.T) {
+	c := counter.New[string]()
+
+	// Apple up to 2, then back down.
+	test.Equal(t, c.Add("apple"), 1)
+	test.Equal(t, c.Add("apple"), 2)
+	test.Equal(t, c.Size(), 1)
+
+	test.Equal(t, c.Sub("apple"), 1)
+	test.Equal(t, c.Size(), 1, test.Context("Still one entry after decrement"))
+
+	test.Equal(t, c.Sub("apple"), 0)
+	test.Equal(t, c.Size(), 0, test.Context("Entry should be deleted at zero"))
+
+	// Sub on missing key is a no-op returning 0.
+	test.Equal(t, c.Sub("apple"), 0)
+	test.Equal(t, c.Size(), 0)
+
+	// After deletion, Add should start fresh at 1 again.
+	test.Equal(t, c.Add("apple"), 1, test.Context("Cycling through delete must re-seed at 1"))
+	test.Equal(t, c.Size(), 1)
+}
+
 func TestReset(t *testing.T) {
 	fruits := []string{
 		"apple",
