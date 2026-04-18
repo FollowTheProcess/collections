@@ -383,6 +383,15 @@ func TestIsDisjoint(t *testing.T) {
 			want: false,
 		},
 		{
+			name: "three with two the same",
+			sets: []*set.Set[int]{
+				set.From([]int{1}),
+				set.From([]int{2}),
+				set.From([]int{2}),
+			},
+			want: false,
+		},
+		{
 			name: "no common items",
 			sets: []*set.Set[int]{
 				set.From([]int{1, 2, 3, 4}),
@@ -418,13 +427,13 @@ func TestIsSubset(t *testing.T) {
 			name: "both empty",
 			a:    set.New[string](),
 			b:    set.New[string](),
-			want: false,
+			want: true,
 		},
 		{
 			name: "a empty",
 			a:    set.New[string](),
 			b:    set.From([]string{"one", "two", "three"}),
-			want: false,
+			want: true,
 		},
 		{
 			name: "b empty",
@@ -469,7 +478,7 @@ func TestIsSuperset(t *testing.T) {
 			name: "both empty",
 			a:    set.New[string](),
 			b:    set.New[string](),
-			want: false,
+			want: true,
 		},
 		{
 			name: "a empty",
@@ -481,7 +490,7 @@ func TestIsSuperset(t *testing.T) {
 			name: "b empty",
 			a:    set.From([]string{"one", "two", "three"}),
 			b:    set.New[string](),
-			want: false,
+			want: true,
 		},
 		{
 			name: "not a superset",

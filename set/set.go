@@ -209,7 +209,7 @@ func Union[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Intersection returns a set containing all the items present in all the input sets, without duplicates.
 func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
-	if sets == nil {
+	if len(sets) == 0 {
 		return New[T]()
 	}
 
@@ -263,7 +263,7 @@ func Intersection[T comparable](sets ...*Set[T]) *Set[T] {
 
 // Difference returns a set containing the items present in set that are not contained in any of the others.
 func Difference[T comparable](set *Set[T], others ...*Set[T]) *Set[T] {
-	if set == nil || others == nil {
+	if set == nil {
 		return New[T]()
 	}
 
@@ -348,38 +348,18 @@ func SymmetricDifference[T comparable](a, b *Set[T]) *Set[T] {
 // It is equivalent to checking for the empty intersection but is significantly faster
 // than calling [Intersection] because it does not construct the result set and does no allocation.
 func IsDisjoint[T comparable](sets ...*Set[T]) bool {
-	// Easy to handle early and guards against indexing later
-	if len(sets) == 0 {
+	if len(sets) < 2 {
 		return false
 	}
 
-	if len(sets) == 1 {
-		return false // It has every item in common with itself
-	}
+	seen := make(map[T]struct{})
 
-	var smallestIndex int // The index in sets where the smallest set is located
-
-	minSize := math.MaxInt
-	for index, set := range sets {
-		if len(set.container) < minSize {
-			minSize = len(set.container)
-			smallestIndex = index
-		}
-	}
-
-	smallest := sets[smallestIndex]
-
-	for item := range smallest.container {
-		for index, other := range sets {
-			// Skip over the smallest one because there's no point comparing
-			// against itself
-			if index == smallestIndex {
-				continue
-			}
-
-			if other.Contains(item) {
+	for _, set := range sets {
+		for item := range set.container {
+			if _, alreadySeen := seen[item]; alreadySeen {
 				return false
 			}
+			seen[item] = struct{}{}
 		}
 	}
 
@@ -393,8 +373,8 @@ func IsSubset[T comparable](a, b *Set[T]) bool {
 		return false
 	}
 
-	if a.IsEmpty() || b.IsEmpty() {
-		return false
+	if a.IsEmpty() {
+		return true
 	}
 
 	for item := range a.container {
