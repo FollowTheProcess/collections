@@ -1,7 +1,6 @@
 package dag_test
 
 import (
-	"errors"
 	"fmt"
 	"slices"
 	"testing"
@@ -32,7 +31,7 @@ func TestAddVertex(t *testing.T) {
 
 		err = graph.AddVertex("v1", "world")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexExists))
+		test.ErrorIs(t, err, dag.ErrVertexExists)
 	})
 }
 
@@ -56,7 +55,7 @@ func TestGetVertex(t *testing.T) {
 
 		_, err = graph.GetVertex("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 }
 
@@ -92,7 +91,7 @@ func TestAddEdge(t *testing.T) {
 
 		err := graph.AddEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("child missing", func(t *testing.T) {
@@ -102,7 +101,7 @@ func TestAddEdge(t *testing.T) {
 
 		err := graph.AddEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("self loop", func(t *testing.T) {
@@ -112,7 +111,7 @@ func TestAddEdge(t *testing.T) {
 
 		err := graph.AddEdge("one", "one")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrSelfLoop))
+		test.ErrorIs(t, err, dag.ErrSelfLoop)
 	})
 
 	t.Run("duplicate edge", func(t *testing.T) {
@@ -124,7 +123,7 @@ func TestAddEdge(t *testing.T) {
 
 		err := graph.AddEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrEdgeExists))
+		test.ErrorIs(t, err, dag.ErrEdgeExists)
 	})
 
 	t.Run("would create cycle", func(t *testing.T) {
@@ -138,7 +137,7 @@ func TestAddEdge(t *testing.T) {
 
 		err := graph.AddEdge("three", "one")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrCycle))
+		test.ErrorIs(t, err, dag.ErrCycle)
 	})
 }
 
@@ -184,7 +183,7 @@ func TestRemoveEdge(t *testing.T) {
 
 		err := graph.RemoveEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("missing to", func(t *testing.T) {
@@ -193,7 +192,7 @@ func TestRemoveEdge(t *testing.T) {
 
 		err := graph.RemoveEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("edge does not exist", func(t *testing.T) {
@@ -203,7 +202,7 @@ func TestRemoveEdge(t *testing.T) {
 
 		err := graph.RemoveEdge("one", "two")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrEdgeNotFound))
+		test.ErrorIs(t, err, dag.ErrEdgeNotFound)
 	})
 
 	t.Run("allows re-adding after remove", func(t *testing.T) {
@@ -250,7 +249,7 @@ func TestRemoveVertex(t *testing.T) {
 		graph := dag.New[string, int]()
 		err := graph.RemoveVertex("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("re-add after remove", func(t *testing.T) {
@@ -340,7 +339,7 @@ func TestChildren(t *testing.T) {
 		graph := dag.New[string, int]()
 		_, err := graph.Children("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("early termination", func(t *testing.T) {
@@ -396,7 +395,7 @@ func TestParents(t *testing.T) {
 		graph := dag.New[string, int]()
 		_, err := graph.Parents("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 }
 
@@ -449,7 +448,7 @@ func TestDescendants(t *testing.T) {
 		graph := dag.New[string, int]()
 		_, err := graph.Descendants("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("early termination", func(t *testing.T) {
@@ -523,7 +522,7 @@ func TestAncestors(t *testing.T) {
 		graph := dag.New[string, int]()
 		_, err := graph.Ancestors("missing")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrVertexNotFound))
+		test.ErrorIs(t, err, dag.ErrVertexNotFound)
 	})
 
 	t.Run("early termination", func(t *testing.T) {
@@ -624,7 +623,7 @@ func TestSort(t *testing.T) {
 
 		err := graph.AddEdge("five", "one")
 		test.Err(t, err)
-		test.True(t, errors.Is(err, dag.ErrCycle))
+		test.ErrorIs(t, err, dag.ErrCycle)
 	})
 
 	t.Run("sort is idempotent", func(t *testing.T) {
