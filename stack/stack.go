@@ -7,6 +7,7 @@ package stack // import "go.followtheprocess.codes/collections/stack"
 import (
 	"fmt"
 	"iter"
+	"slices"
 )
 
 // Stack is a LIFO stack generic over any type.
@@ -125,8 +126,8 @@ func (s *Stack[T]) IsEmpty() bool {
 //	slices.Collect(s.All()) // [there hello]
 func (s *Stack[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
-		for i := len(s.container) - 1; i >= 0; i-- {
-			if !yield(s.container[i]) {
+		for _, v := range slices.Backward(s.container) {
+			if !yield(v) {
 				return
 			}
 		}
